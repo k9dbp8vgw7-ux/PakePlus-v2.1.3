@@ -1,32 +1,3431 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <link rel="stylesheet" href="styles.css" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>PakePlus App</title>
-        <script type="module" src="/main.js" defer></script>
-    </head>
-
-    <body>
-        <main class="container">
-            <h1>Welcome to PakePlus</h1>
-            <form class="row" id="greet-form">
-                <input id="inputValue" placeholder="Enter a something..." />
-            </form>
-            <div class="resultBox">
-                <span>result: </span>
-                <span id="result"></span>
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>游戏分组小程序</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            background-color: #1a1a1a;
+            color: #fff;
+            padding: 12px;
+            font-size: 14px;
+            line-height: 1.4;
+            background-image: radial-gradient(circle at 50% 50%, #2a2a2a 0%, #1a1a1a 100%);
+            touch-action: manipulation;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        /* 标题样式 - 完全按照参考图 */
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin: 20px 0 12px;
+            color: #fff;
+            position: relative;
+            padding-left: 10px;
+        }
+        
+        .section-title:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 20px;
+            background-color: #4a9eff;
+            border-radius: 2px;
+        }
+        
+        /* 输入框样式 - 按照参考图 */
+        .input-area {
+            background-color: #2a2a2a;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #3a3a3a;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 120px;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 15px;
+            resize: none;
+            margin-bottom: 12px;
+            background-color: #333;
+            color: #fff;
+        }
+        
+        .count-info {
+            color: #888;
+            font-size: 13px;
+        }
+        
+        /* 位置分配区域 - 按照参考图 */
+        .position-section {
+            background-color: #2a2a2a;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #3a3a3a;
+        }
+        
+        .position-category {
+            margin-bottom: 20px;
+        }
+        
+        .position-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .position-name {
+            font-weight: 600;
+            font-size: 16px;
+            color: #fff;
+        }
+        
+        .position-count {
+            color: #4a9eff;
+            font-size: 13px;
+            background-color: rgba(74, 158, 255, 0.1);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        
+        .position-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .player-tag {
+            background: linear-gradient(135deg, #3a3a3a, #2a2a2a);
+            border-radius: 8px;
+            padding: 10px 8px;
+            text-align: center;
+            font-size: 15px;
+            font-weight: 600; /* 黑体 */
+            font-family: "黑体", "SimHei", sans-serif; /* 黑体字体 */
+            position: relative;
+            border: 1px solid #444;
+            color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .player-tag.selected {
+            background: linear-gradient(135deg, #2a4a7a, #1a3a6a);
+            border-color: #4a9eff;
+        }
+        
+        .delete-btn {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 18px;
+            height: 18px;
+            background-color: #ff4444;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            line-height: 1;
+            border: 2px solid #2a2a2a;
+            cursor: pointer;
+        }
+        
+        /* 选择位置区域 - 按照参考图 */
+        .position-selector {
+            background-color: #333;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            border: 1px solid #444;
+        }
+        
+        .position-selector-title {
+            font-size: 14px;
+            color: #aaa;
+            margin-bottom: 15px;
+            line-height: 1.3;
+        }
+        
+        .position-selector-title span {
+            font-size: 12px;
+            color: #888;
+            margin-left: 5px;
+        }
+        
+        .player-select-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        
+        .player-select-item {
+            background: linear-gradient(135deg, #3a3a3a, #2a2a2a);
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 12px 5px;
+            text-align: center;
+            font-size: 15px;
+            font-weight: 600; /* 黑体 */
+            font-family: "黑体", "SimHei", sans-serif; /* 黑体字体 */
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .player-select-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .player-select-item.selected {
+            background: linear-gradient(135deg, #2a4a7a, #1a3a6a);
+            border-color: #4a9eff;
+        }
+        
+        .player-select-item.unassigned {
+            background: linear-gradient(135deg, #444, #333);
+            border-color: #666;
+            color: #ccc;
+        }
+        
+        /* 评分区域 - 按照参考图 */
+        .rating-section {
+            background-color: #2a2a2a;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #3a3a3a;
+        }
+        
+        .rating-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #3a3a3a;
+        }
+        
+        .rating-item:last-child {
+            border-bottom: none;
+        }
+        
+        .player-name {
+            font-size: 15px;
+            color: #fff;
+            font-family: "黑体", "SimHei", sans-serif; /* 黑体字体 */
+            font-weight: 600;
+        }
+        
+        .rating-input {
+            width: 70px;
+            padding: 8px 12px;
+            border: 1px solid #444;
+            border-radius: 8px;
+            text-align: center;
+            background-color: #333;
+            color: #fff;
+            font-size: 15px;
+        }
+        
+        /* 分组设置区域 - 按照参考图 */
+        .group-settings {
+            background-color: #2a2a2a;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #3a3a3a;
+        }
+        
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .setting-label {
+            font-size: 16px;
+            color: #fff;
+        }
+        
+        .number-selector {
+            display: flex;
+            align-items: center;
+            background-color: #333;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #444;
+        }
+        
+        .number-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background-color: #3a3a3a;
+            color: #fff;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .number-btn:hover {
+            background-color: #444;
+        }
+        
+        .number-value {
+            width: 60px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+            background-color: #333;
+        }
+        
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .settings-btn {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #4a9eff, #2a7eff);
+            border-radius: 8px;
+            font-size: 14px;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        
+        /* 分组结果区域 - 按照参考图 */
+        .group-results {
+            background-color: #2a2a2a;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 30px;
+            border: 1px solid #3a3a3a;
+        }
+        
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px; /* 稍微减小边距 */
+        }
+        
+        /* 开始分组按钮 - 恢复大按钮样式 */
+        .action-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #4a9eff, #2a7eff);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            margin-top: 10px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(74, 158, 255, 0.3);
+        }
+        
+        .group-container {
+            margin-bottom: 20px; /* 减小边距 */
+            padding: 15px; /* 减小内边距 */
+            border-radius: 12px;
+            border: 1px solid #3a3a3a;
+            position: relative;
+            transition: all 0.3s;
+        }
+        
+        .group-container.drag-over {
+            background-color: rgba(74, 158, 255, 0.1);
+            border-color: #4a9eff;
+            transform: scale(1.02);
+        }
+        
+        .group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+        }
+        
+        .group-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 15px;
+            color: #fff; /* 白色字体 */
+            font-weight: 600;
+        }
+        
+        /* 分组结果的行间距缩小20% */
+        .player-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px; /* 缩小20%，原为15px */
+            margin-bottom: 8px; /* 缩小20%，原为10px */
+            padding: 8px 0; /* 缩小20%，原为10px 0 */
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            min-height: 40px; /* 缩小20%，原为50px */
+        }
+        
+        .player-row:last-child {
+            border-bottom: none;
+        }
+        
+        .player-row.drag-over {
+            background-color: rgba(74, 158, 255, 0.1);
+            border-color: #4a9eff;
+        }
+        
+        .result-player {
+            display: flex;
+            align-items: center;
+            font-size: 17px;
+            font-weight: 600; /* 黑体 */
+            font-family: "黑体", "SimHei", sans-serif; /* 黑体字体 */
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s;
+            position: relative;
+            border: 2px solid transparent;
+        }
+        
+        .result-player:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .result-player.selected {
+            border-color: #ffcc00;
+            background-color: rgba(255, 204, 0, 0.1);
+            transform: scale(1.05);
+            z-index: 100;
+            box-shadow: 0 0 15px rgba(255, 204, 0, 0.5);
+        }
+        
+        .result-player.dragging {
+            opacity: 0.7;
+            transform: scale(1.1);
+            z-index: 1000;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+        
+        .result-player.drag-over {
+            border-color: #4a9eff;
+            background-color: rgba(74, 158, 255, 0.2);
+        }
+        
+        .position-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            margin-right: 8px;
+            background-color: #3a3a3a;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #4a9eff;
+        }
+        
+        /* 前锋为红色 */
+        .result-player[data-position="forward"] .position-icon {
+            color: #ff6b6b;
+        }
+        
+        /* 中场为绿色 */
+        .result-player[data-position="midfield"] .position-icon {
+            color: #1dd1a1;
+        }
+        
+        /* 后卫颜色不变（保持原来的蓝色） */
+        .result-player[data-position="defender"] .position-icon {
+            color: #2e86de;
+        }
+        
+        /* 守门员颜色不变 */
+        .result-player[data-position="goalkeeper"] .position-icon {
+            color: #f368e0;
+        }
+        
+        .position-label {
+            display: inline-block;
+            min-width: 40px;
+            text-align: center;
+            background-color: rgba(74, 158, 255, 0.1);
+            border-radius: 4px;
+            padding: 4px 8px;
+            margin-right: 12px;
+            font-size: 12px;
+            color: #4a9eff;
+        }
+        
+        /* 交换图标 */
+        .swap-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            margin-left: 8px;
+            background-color: #ffcc00;
+            border-radius: 50%;
+            font-size: 12px;
+            color: #333;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        /* 位置选择弹窗 */
+        .position-select-popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .popup-content {
+            background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+            border-radius: 15px;
+            width: 85%;
+            max-width: 300px;
+            padding: 25px;
+            border: 1px solid #444;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        .popup-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #fff;
+        }
+        
+        .position-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .position-option {
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 16px;
+            color: #fff;
+            cursor: pointer;
+            border: 1px solid #444;
+            transition: all 0.2s;
+        }
+        
+        .position-option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .position-option.forward {
+            background: linear-gradient(135deg, #ff6b6b, #ff4757);
+        }
+        
+        .position-option.midfield {
+            background: linear-gradient(135deg, #1dd1a1, #10ac84);
+        }
+        
+        .position-option.defender {
+            background: linear-gradient(135deg, #2e86de, #1a75bb);
+        }
+        
+        .position-option.goalkeeper {
+            background: linear-gradient(135deg, #f368e0, #d45bb5);
+        }
+        
+        /* 弹窗样式 - 设置界面 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+            border-radius: 15px;
+            width: 85%;
+            max-width: 400px;
+            padding: 25px;
+            border: 1px solid #444;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #fff;
+            text-align: center;
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 24px;
+            background: none;
+            border: none;
+            color: #aaa;
+            cursor: pointer;
+        }
+        
+        .modal-option {
+            padding: 18px 15px;
+            border-bottom: 1px solid #3a3a3a;
+            font-size: 16px;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .modal-option:hover {
+            background-color: #333;
+        }
+        
+        .modal-option:last-child {
+            border-bottom: none;
+        }
+        
+        .password-input {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #444;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-size: 16px;
+            background-color: #333;
+            color: #fff;
+        }
+        
+        .password-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .password-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .password-btn.cancel {
+            background-color: #444;
+            color: #fff;
+        }
+        
+        .password-btn.confirm {
+            background: linear-gradient(135deg, #4a9eff, #2a7eff);
+            color: white;
+        }
+        
+        /* 后台数据调整界面 */
+        .data-adjust-section {
+            display: none;
+        }
+        
+        .data-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .back-btn {
+            padding: 8px 16px;
+            background-color: #444;
+            color: #fff;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .data-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .data-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #3a3a3a;
+        }
+        
+        .data-item:last-child {
+            border-bottom: none;
+        }
+        
+        .data-name {
+            font-size: 16px;
+            color: #fff;
+            font-family: "黑体", "SimHei", sans-serif; /* 黑体字体 */
+            font-weight: 600;
+        }
+        
+        .data-select {
+            padding: 8px 12px;
+            border-radius: 6px;
+            background-color: #333;
+            color: #fff;
+            border: 1px solid #444;
+        }
+        
+        .data-input {
+            width: 80px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            background-color: #333;
+            color: #fff;
+            border: 1px solid #444;
+            text-align: center;
+        }
+        
+        .data-checkbox {
+            width: 20px;
+            height: 20px;
+            accent-color: #4a9eff;
+        }
+        
+        /* 音效相关 */
+        .click-sound {
+            display: none;
+        }
+        
+        /* 分组动画 */
+        @keyframes scrollUp {
+            0% { transform: translateY(50px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        
+        .group-animation {
+            animation: scrollUp 2s ease-out;
+        }
+        
+        /* 滚动动画 */
+        @keyframes randomScroll {
+            0% { transform: translateY(100px); opacity: 0; }
+            25% { transform: translateY(-20px); opacity: 0.5; }
+            50% { transform: translateY(50px); opacity: 0.7; }
+            75% { transform: translateY(-10px); opacity: 0.9; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        
+        .random-scroll {
+            animation: randomScroll 2s ease-out;
+        }
+        
+        /* 按键动画 */
+        @keyframes buttonClick {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.95); }
+            100% { transform: scale(1); }
+        }
+        
+        .button-click {
+            animation: buttonClick 0.2s ease;
+        }
+        
+        /* 自定义弹窗 */
+        .custom-alert {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .custom-alert-content {
+            background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+            border-radius: 15px;
+            width: 80%;
+            max-width: 300px;
+            padding: 25px;
+            border: 1px solid #444;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+        
+        .custom-alert-message {
+            font-size: 16px;
+            color: #fff;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        .custom-alert-button {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #4a9eff, #2a7eff);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        /* 拖拽指示器 */
+        .drag-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999;
+            display: none;
+        }
+        
+        .drag-preview {
+            position: absolute;
+            background: linear-gradient(135deg, #ffcc00, #ffaa00);
+            color: #333;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            transform: translate(-50%, -50%);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            z-index: 1001;
+        }
+        
+        /* 为新增的关闭按钮添加特殊样式 */
+        #closeSettingsBtn {
+            color: #ff6b6b;
+            font-weight: 600;
+            background-color: rgba(255, 107, 107, 0.1);
+            border-radius: 0 0 10px 10px;
+            margin-top: 10px;
+            border-top: 1px solid #3a3a3a !important;
+        }
+        
+        #closeSettingsBtn:hover {
+            background-color: rgba(255, 107, 107, 0.2);
+        }
+        
+        /* 修改分组结果标题和提示的布局 */
+        .results-header .section-title {
+            margin: 0;
+            flex: 1;
+        }
+        
+        .swap-hint {
+            text-align: right;
+            color: #aaa;
+            font-size: 12px; /* 缩小字体 */
+            padding: 5px 10px;
+            background-color: rgba(255, 204, 0, 0.05);
+            border-radius: 6px;
+            border: 1px solid rgba(255, 204, 0, 0.1);
+            max-width: 50%; /* 限制最大宽度 */
+            line-height: 1.3;
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 480px) {
+            .position-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .player-select-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .position-selector-title {
+                font-size: 13px;
+            }
+            
+            .result-player {
+                font-size: 15px;
+                padding: 6px 10px;
+            }
+            
+            .swap-hint {
+                font-size: 11px;
+                padding: 4px 8px;
+            }
+            
+            .results-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .swap-hint {
+                margin-top: 5px;
+                max-width: 100%;
+                text-align: left;
+            }
+        }
+        
+        @media (max-width: 360px) {
+            .position-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .player-select-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        /* 交换操作提示 */
+        .swap-hint {
+            text-align: center;
+            color: #aaa;
+            font-size: 14px;
+            margin-top: 15px;
+            padding: 10px;
+            background-color: rgba(255, 204, 0, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 204, 0, 0.3);
+        }
+        
+        /* 同一组选择界面的特殊样式 */
+        .same-group-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border-bottom: 1px solid #3a3a3a;
+        }
+        
+        .same-group-item:last-child {
+            border-bottom: none;
+        }
+        
+        .same-group-checkbox {
+            margin-right: 15px;
+            width: 20px;
+            height: 20px;
+            accent-color: #4a9eff;
+        }
+        
+        .same-group-name {
+            font-size: 16px;
+            color: #fff;
+            font-family: "黑体", "SimHei", sans-serif;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="section-title">人员名单</h1>
+        <div class="input-area">
+            <textarea id="playerInput" placeholder="请输入人员名单，支持以下格式：&#10;- 张三, 李四, 王五&#10;- 1. 张三 2. 李四 3. 王五&#10;- 张三&#10;李四&#10;王五&#10;- 张三、李四、王五"></textarea>
+            <div class="count-info">已输入 <span id="playerCount">0</span> 人</div>
+        </div>
+        
+        <h1 class="section-title">位置分配</h1>
+        <div class="position-section">
+            <div class="position-category">
+                <div class="position-header">
+                    <div class="position-name">前锋</div>
+                    <div class="position-count">已选<span id="forwardCount">0</span>人</div>
+                </div>
+                <div class="position-grid" id="forwardList"></div>
             </div>
-            <div class="invokeBox">
-                <button id="openUrl">open_url_browser</button>
-                <button id="openUrlNew">open_url_new</button>
-                <button id="runCommand">run_command</button>
-                <button id="downloadFile">download_file</button>
-                <button id="getExeDir">get_exe_dir</button>
-                <button id="getEnvVar">get_env_var</button>
-                <button id="findPort">find_port</button>
+            
+            <div class="position-category">
+                <div class="position-header">
+                    <div class="position-name">中场</div>
+                    <div class="position-count">已选<span id="midfieldCount">0</span>人</div>
+                </div>
+                <div class="position-grid" id="midfieldList"></div>
             </div>
-        </main>
-    </body>
+            
+            <div class="position-category">
+                <div class="position-header">
+                    <div class="position-name">后卫</div>
+                    <div class="position-count">已选<span id="defenderCount">0</span>人</div>
+                </div>
+                <div class="position-grid" id="defenderList"></div>
+            </div>
+            
+            <div class="position-category">
+                <div class="position-header">
+                    <div class="position-name">守门员</div>
+                    <div class="position-count">已选<span id="goalkeeperCount">0</span>人</div>
+                </div>
+                <div class="position-grid" id="goalkeeperList"></div>
+            </div>
+            
+            <div class="position-selector">
+                <div class="position-selector-title">点击人员选择位置：<span>（可多选，每个人员只能分配到一个位置）</span></div>
+                <div class="player-select-grid" id="playerSelector"></div>
+            </div>
+        </div>
+        
+        <h1 class="section-title" id="ratingTitle">人员评分</h1>
+        <div class="rating-section" id="ratingSection">
+            <div id="ratingList"></div>
+        </div>
+        
+        <h1 class="section-title">分组设置</h1>
+        <div class="group-settings">
+            <div class="settings-header">
+                <div class="setting-label">分组设置</div>
+                <button class="settings-btn" id="settingsBtn">设置</button>
+            </div>
+            
+            <div class="setting-row">
+                <div class="setting-label">分组数量</div>
+                <div class="number-selector">
+                    <button class="number-btn" id="decreaseGroup">-</button>
+                    <div class="number-value" id="groupCount">3</div>
+                    <button class="number-btn" id="increaseGroup">+</button>
+                </div>
+            </div>
+            
+            <div class="setting-row">
+                <div class="setting-label">每组人数</div>
+                <div class="number-selector">
+                    <button class="number-btn" id="decreasePerGroup">-</button>
+                    <div class="number-value" id="perGroupCount">7</div>
+                    <button class="number-btn" id="increasePerGroup">+</button>
+                </div>
+            </div>
+        </div>
+        
+        <button class="action-btn" id="groupingBtn">开始分组</button>
+        
+        <h1 class="section-title">分组结果</h1>
+        <div class="group-results">
+            <div class="results-header">
+                <div class="section-title">分组结果</div>
+                <div class="swap-hint">
+                    提示：点击互换分组、拖动移动到其他组
+                </div>
+            </div>
+            <div id="resultsContainer">
+                <!-- 分组结果将在这里显示 -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- 位置选择弹窗 -->
+    <div class="position-select-popup" id="positionPopup">
+        <div class="popup-content">
+            <div class="popup-title">为 <span id="selectedPlayerName"></span> 选择位置</div>
+            <div class="position-options">
+                <div class="position-option forward" data-position="forward">前锋</div>
+                <div class="position-option midfield" data-position="midfield">中场</div>
+                <div class="position-option defender" data-position="defender">后卫</div>
+                <div class="position-option goalkeeper" data-position="goalkeeper">守门员</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 设置弹窗 -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-title">设置</div>
+            <button class="modal-close" id="closeModal">×</button>
+            <div class="modal-option" id="tempRatingAdjust">为临时人员评分</div>
+            <div class="modal-option" id="positionAdjust">后台位置调整</div>
+            <div class="modal-option" id="ratingAdjust">后台评分调整</div>
+            <div class="modal-option" id="specialAdjust">特别人员调整</div>
+            <!-- 新增：分到同一组选项 -->
+            <div class="modal-option" id="sameGroupAdjust">*****</div>
+            <!-- 新增关闭按钮 -->
+            <div class="modal-option" id="closeSettingsBtn" style="color: #ff6b6b; border-top: 1px solid #3a3a3a;">关闭</div>
+        </div>
+    </div>
+    
+    <!-- 密码验证弹窗 -->
+    <div class="modal" id="passwordModal">
+        <div class="modal-content">
+            <div class="modal-title">请输入密码</div>
+            <input type="password" class="password-input" id="passwordInput" placeholder="请输入密码">
+            <div class="password-buttons">
+                <button class="password-btn cancel" id="cancelPassword">取消</button>
+                <button class="password-btn confirm" id="submitPassword">确认</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 后台位置调整界面 -->
+    <div class="modal" id="positionAdjustModal">
+        <div class="modal-content">
+            <div class="data-header">
+                <button class="back-btn" id="backFromPosition">返回</button>
+                <div class="modal-title">后台位置调整</div>
+                <div></div>
+            </div>
+            <div class="data-list" id="positionAdjustList">
+                <!-- 位置调整列表 -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- 后台评分调整界面 -->
+    <div class="modal" id="ratingAdjustModal">
+        <div class="modal-content">
+            <div class="data-header">
+                <button class="back-btn" id="backFromRating">返回</button>
+                <div class="modal-title">后台评分调整</div>
+                <div></div>
+            </div>
+            <div class="data-list" id="ratingAdjustList">
+                <!-- 评分调整列表 -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- 特别人员调整界面 -->
+    <div class="modal" id="specialAdjustModal">
+        <div class="modal-content">
+            <div class="data-header">
+                <button class="back-btn" id="backFromSpecial">返回</button>
+                <div class="modal-title">特别人员调整</div>
+                <div></div>
+            </div>
+            <div class="data-list" id="specialAdjustList">
+                <!-- 特别人员调整列表 -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- 新增临时人员评分弹窗 -->
+    <div class="modal" id="tempRatingModal">
+        <div class="modal-content">
+            <div class="data-header">
+                <button class="back-btn" id="backFromTempRating">返回</button>
+                <div class="modal-title">临时人员评分设置</div>
+                <div></div>
+            </div>
+            <div class="data-list" id="tempRatingList">
+                <!-- 临时人员评分列表 -->
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="password-btn confirm" id="saveTempRatings" style="flex: 1;">确定</button>
+                <button class="password-btn cancel" id="cancelTempRatings" style="flex: 1;">取消</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 新增：分到同一组设置界面 -->
+    <div class="modal" id="sameGroupModal">
+        <div class="modal-content">
+            <div class="data-header">
+                <button class="back-btn" id="backFromSameGroup">返回</button>
+                <div class="modal-title">分到同一组设置</div>
+                <div></div>
+            </div>
+            <div class="data-list" id="sameGroupList">
+                <!-- 分到同一组人员列表 -->
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="password-btn confirm" id="saveSameGroup" style="flex: 1;">确定</button>
+                <button class="password-btn cancel" id="cancelSameGroup" style="flex: 1;">取消</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 自定义弹窗 -->
+    <div class="custom-alert" id="customAlert">
+        <div class="custom-alert-content">
+            <div class="custom-alert-message" id="alertMessage"></div>
+            <button class="custom-alert-button" id="alertButton">确定</button>
+        </div>
+    </div>
+    
+    <!-- 拖拽指示器 -->
+    <div class="drag-indicator" id="dragIndicator">
+        <div class="drag-preview" id="dragPreview"></div>
+    </div>
+    
+    <!-- 音频元素 -->
+    <audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3" preload="auto"></audio>
+    <audio id="scrollSound" src="https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-jump-coin-216.mp3" preload="auto"></audio>
+    <audio id="completeSound" src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3" preload="auto"></audio>
+    <audio id="deleteSound" src="https://assets.mixkit.co/sfx/preview/mixkit-plastic-bubble-click-1124.mp3" preload="auto"></audio>
+    <audio id="groupSound" src="https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3" preload="auto"></audio>
+    <audio id="swapSound" src="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3" preload="auto"></audio>
+    
+    <script>
+        // 基础数据 - 人员位置和评分信息
+        const playerData = {
+            // 前锋
+            "小五": { position: "forward", rating: 9 },
+            "陈伟": { position: "forward", rating: 9 },
+            "孙总": { position: "forward", rating: 5 },
+            "小胖": { position: "forward", rating: 7 },
+            "蛰伏": { position: "forward", rating: 7 },
+            "因扎吉": { position: "forward", rating: 5 },
+            "李楠": { position: "forward", rating: 4 },
+            "老王": { position: "forward", rating: 3 },
+            
+            // 中场
+            "马超": { position: "midfield", rating: 10 },
+            "渠玉": { position: "midfield", rating: 10 },
+            "超哥": { position: "midfield", rating: 7 },
+            "小强": { position: "midfield", rating: 9 },
+            "林子一": { position: "midfield", rating: 8 },
+            "小解": { position: "midfield", rating: 7 },
+            "黄驰": { position: "midfield", rating: 7 },
+            "大强": { position: "midfield", rating: 10 },
+            "郭阳": { position: "midfield", rating: 8 },
+            "大奎": { position: "midfield", rating: 8 },  
+          
+            // 后卫
+            "许涛": { position: "defender", rating: 8 },
+            "梅林": { position: "defender", rating: 8 },
+            "小曹": { position: "defender", rating: 8 },
+            "小宋": { position: "defender", rating: 8 },
+            "天骄": { position: "defender", rating: 4 },
+            "王小强": { position: "defender", rating: 4 },
+            "吕品": { position: "defender", rating: 4 },
+            "方大普": { position: "defender", rating: 4 },
+            "王晓飞": { position: "defender", rating: 6 }
+        };
+        
+        // 特别人员名单
+        let specialPlayers = ["王小强", "吕品", "方大普"];
+        
+        // 新增：需要分到同一组的人员名单
+        let sameGroupPlayers = [];
+        
+        // 临时评分存储
+        let tempPlayerRatings = {};
+        
+        // 当前选中的玩家（用于位置分配）
+        let selectedPlayerForPosition = null;
+        
+        // 所有输入的玩家
+        let allPlayers = [];
+        
+        // 玩家位置分配
+        let playerPositions = {};
+        
+        // 玩家评分
+        let playerRatings = {};
+        
+        // 位置颜色映射
+        const positionColors = {
+            forward: "#ff6b6b",
+            midfield: "#1dd1a1",
+            defender: "#2e86de",
+            goalkeeper: "#f368e0"
+        };
+        
+        // 位置图标映射
+        const positionIcons = {
+            forward: "⚽",
+            midfield: "🔄",
+            defender: "🛡️",
+            goalkeeper: "🧤"
+        };
+        
+        // 位置中文名
+        const positionChinese = {
+            forward: "前锋",
+            midfield: "中场",
+            defender: "后卫",
+            goalkeeper: "守门员"
+        };
+        
+        // 分组结果存储
+        let currentGroups = [];
+        let groupingCompleted = false;
+        
+        // 人员交换功能相关变量
+        let selectedPlayerForSwap = null; // 点击方式选中的第一个玩家
+        let isDraggingPlayer = false; // 是否正在拖拽玩家
+        let draggedPlayer = null; // 当前拖拽的玩家
+        let dragStartX = 0;
+        let dragStartY = 0;
+        let dragPreview = null;
+        
+        // 新增：记录拖拽结束时的目标元素
+        let lastDragTargetElement = null;
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 绑定事件
+            document.getElementById('playerInput').addEventListener('input', processPlayerInput);
+            document.getElementById('groupingBtn').addEventListener('click', performGrouping);
+            document.getElementById('settingsBtn').addEventListener('click', openSettings);
+            document.getElementById('closeModal').addEventListener('click', closeSettings);
+            document.getElementById('positionAdjust').addEventListener('click', adjustPositions);
+            document.getElementById('ratingAdjust').addEventListener('click', adjustRatings);
+            document.getElementById('specialAdjust').addEventListener('click', adjustSpecial);
+            document.getElementById('tempRatingAdjust').addEventListener('click', adjustTempRatings);
+            document.getElementById('sameGroupAdjust').addEventListener('click', adjustSameGroup); // 新增
+            document.getElementById('submitPassword').addEventListener('click', submitPassword);
+            document.getElementById('cancelPassword').addEventListener('click', cancelPassword);
+            document.getElementById('backFromPosition').addEventListener('click', () => closeModal('positionAdjustModal'));
+            document.getElementById('backFromRating').addEventListener('click', () => closeModal('ratingAdjustModal'));
+            document.getElementById('backFromSpecial').addEventListener('click', () => closeModal('specialAdjustModal'));
+            document.getElementById('backFromTempRating').addEventListener('click', () => closeModal('tempRatingModal'));
+            document.getElementById('backFromSameGroup').addEventListener('click', () => closeModal('sameGroupModal')); // 新增
+            document.getElementById('saveTempRatings').addEventListener('click', saveTempRatings);
+            document.getElementById('cancelTempRatings').addEventListener('click', () => closeModal('tempRatingModal'));
+            document.getElementById('saveSameGroup').addEventListener('click', saveSameGroup); // 新增
+            document.getElementById('cancelSameGroup').addEventListener('click', () => closeModal('sameGroupModal')); // 新增
+            document.getElementById('alertButton').addEventListener('click', closeAlert);
+            document.getElementById('closeSettingsBtn').addEventListener('click', closeSettings);
+            
+            // 位置选择弹窗 - 直接点击选择
+            document.querySelectorAll('.position-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    const position = this.getAttribute('data-position');
+                    if (selectedPlayerForPosition) {
+                        confirmPosition(position);
+                    }
+                });
+            });
+            
+            // 分组数量控制
+            document.getElementById('decreaseGroup').addEventListener('click', () => adjustNumber('group', -1));
+            document.getElementById('increaseGroup').addEventListener('click', () => adjustNumber('group', 1));
+            document.getElementById('decreasePerGroup').addEventListener('click', () => adjustNumber('perGroup', -1));
+            document.getElementById('increasePerGroup').addEventListener('click', () => adjustNumber('perGroup', 1));
+            
+            // 初始隐藏评分区域
+            document.getElementById('ratingSection').style.display = 'none';
+            document.getElementById('ratingTitle').style.display = 'none';
+            
+            // 为所有按钮添加点击动画和音效
+            const buttons = document.querySelectorAll('button');
+            buttons.forEach(button => {
+                button.addEventListener('click', function() {
+                    playSound('click');
+                    this.classList.add('button-click');
+                    setTimeout(() => {
+                        this.classList.remove('button-click');
+                    }, 200);
+                });
+            });
+            
+            // 初始化拖拽指示器
+            dragPreview = document.getElementById('dragPreview');
+            
+            // 添加全局事件监听器
+            document.addEventListener('touchmove', handleTouchMove, { passive: false });
+            document.addEventListener('touchend', handleTouchEnd);
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+            
+            // 阻止默认拖拽行为
+            document.addEventListener('dragstart', function(e) {
+                e.preventDefault();
+                return false;
+            });
+        });
+        
+        // 处理玩家输入 - 支持带序号格式
+        function processPlayerInput() {
+            const input = document.getElementById('playerInput').value.trim();
+            if (!input) {
+                allPlayers = [];
+                updatePlayerCount();
+                clearPositionLists();
+                updatePlayerSelector();
+                return;
+            }
+            
+            // 支持多种分隔符：逗号、换行、顿号、空格
+            // 同时支持带序号格式：1. 小五 2. 陈伟 3. 马超
+            let rawPlayers = input.split(/[,，、\n]/);
+            let players = [];
+            
+            rawPlayers.forEach(rawPlayer => {
+                let player = rawPlayer.trim();
+                
+                // 去除序号：如 "1. 小五" -> "小五"
+                player = player.replace(/^\d+\.\s*/, '');
+                player = player.replace(/^\d+、\s*/, '');
+                player = player.replace(/^\d+\s*/, '');
+                
+                if (player) {
+                    players.push(player);
+                }
+            });
+            
+            // 去重
+            allPlayers = [...new Set(players)];
+            
+            updatePlayerCount();
+            updatePlayerPositions();
+            updatePlayerSelector();
+            
+            // 更新评分区域
+            updateRatingSection();
+        }
+        
+        // 更新玩家数量显示
+        function updatePlayerCount() {
+            document.getElementById('playerCount').textContent = allPlayers.length;
+        }
+        
+        // 更新玩家位置（基于后台数据）
+        function updatePlayerPositions() {
+            playerPositions = {};
+            playerRatings = {};
+            
+            // 清空位置列表
+            clearPositionLists();
+            
+            allPlayers.forEach(player => {
+                // 从后台数据获取位置和评分
+                if (playerData[player]) {
+                    playerPositions[player] = playerData[player].position;
+                    playerRatings[player] = playerData[player].rating;
+                } else {
+                    // 默认未分配位置
+                    playerPositions[player] = null;
+                    // 默认评分改为7分
+                    playerRatings[player] = 7;
+                }
+                
+                // 如果有位置，添加到对应位置列表
+                if (playerPositions[player]) {
+                    addPlayerToPositionList(player, playerPositions[player]);
+                }
+            });
+            
+            updatePositionCounts();
+        }
+        
+        // 清空位置列表
+        function clearPositionLists() {
+            const positionLists = ['forwardList', 'midfieldList', 'defenderList', 'goalkeeperList'];
+            positionLists.forEach(id => {
+                document.getElementById(id).innerHTML = '';
+            });
+        }
+        
+        // 添加玩家到位置列表
+        function addPlayerToPositionList(player, position) {
+            const positionMap = {
+                "forward": "forwardList",
+                "midfield": "midfieldList",
+                "defender": "defenderList",
+                "goalkeeper": "goalkeeperList"
+            };
+            
+            const listId = positionMap[position];
+            if (!listId) return;
+            
+            const listElement = document.getElementById(listId);
+            const playerElement = document.createElement('div');
+            playerElement.className = 'player-tag selected';
+            playerElement.innerHTML = `
+                ${player}
+                <div class="delete-btn">×</div>
+            `;
+            
+            // 删除按钮事件
+            playerElement.querySelector('.delete-btn').addEventListener('click', function(e) {
+                e.stopPropagation();
+                playSound('delete');
+                
+                // 从位置中移除
+                playerPositions[player] = null;
+                
+                // 从位置列表中移除
+                this.parentElement.remove();
+                
+                // 更新计数
+                updatePositionCounts();
+                
+                // 更新选择器，将此人背景变为白色
+                updatePlayerSelector();
+                
+                // 重新显示评分区域（因为现在有未评分人员了）
+                updateRatingSection();
+            });
+            
+            listElement.appendChild(playerElement);
+        }
+        
+        // 更新位置计数
+        function updatePositionCounts() {
+            const counts = {
+                forward: 0,
+                midfield: 0,
+                defender: 0,
+                goalkeeper: 0
+            };
+            
+            Object.values(playerPositions).forEach(pos => {
+                if (pos && counts[pos] !== undefined) {
+                    counts[pos]++;
+                }
+            });
+            
+            document.getElementById('forwardCount').textContent = counts.forward;
+            document.getElementById('midfieldCount').textContent = counts.midfield;
+            document.getElementById('defenderCount').textContent = counts.defender;
+            document.getElementById('goalkeeperCount').textContent = counts.goalkeeper;
+        }
+        
+        // 更新玩家选择器
+        function updatePlayerSelector() {
+            const selector = document.getElementById('playerSelector');
+            selector.innerHTML = '';
+            
+            allPlayers.forEach(player => {
+                const playerElement = document.createElement('div');
+                playerElement.className = 'player-select-item';
+                
+                // 根据是否分配位置设置不同样式
+                if (playerPositions[player]) {
+                    playerElement.classList.add('selected');
+                    playerElement.style.borderColor = positionColors[playerPositions[player]];
+                    playerElement.style.background = `linear-gradient(135deg, ${positionColors[playerPositions[player]]}33, ${positionColors[playerPositions[player]]}11)`;
+                } else {
+                    playerElement.classList.add('unassigned');
+                }
+                
+                playerElement.textContent = player;
+                
+                playerElement.addEventListener('click', function() {
+                    playSound('click');
+                    openPositionPopup(player);
+                });
+                
+                selector.appendChild(playerElement);
+            });
+        }
+        
+        // 打开位置选择弹窗
+        function openPositionPopup(player) {
+            selectedPlayerForPosition = player;
+            document.getElementById('selectedPlayerName').textContent = player;
+            document.getElementById('positionPopup').style.display = 'flex';
+            
+            // 预选当前位置（如果有）
+            const currentPosition = playerPositions[player];
+            const positionOptions = document.querySelectorAll('.position-option');
+            positionOptions.forEach(option => {
+                option.classList.remove('selected');
+                if (option.getAttribute('data-position') === currentPosition) {
+                    option.classList.add('selected');
+                }
+            });
+        }
+        
+        // 关闭位置选择弹窗
+        function closePositionPopup() {
+            document.getElementById('positionPopup').style.display = 'none';
+            selectedPlayerForPosition = null;
+        }
+        
+        // 确认位置选择
+        function confirmPosition(position) {
+            if (!selectedPlayerForPosition) return;
+            
+            // 更新玩家位置
+            playerPositions[selectedPlayerForPosition] = position;
+            
+            // 如果之前有位置，先从原位置列表中移除
+            clearPositionLists();
+            
+            // 重新添加所有有位置的玩家到位置列表
+            allPlayers.forEach(player => {
+                if (playerPositions[player]) {
+                    addPlayerToPositionList(player, playerPositions[player]);
+                }
+            });
+            
+            // 更新计数
+            updatePositionCounts();
+            
+            // 更新选择器显示
+            updatePlayerSelector();
+            
+            // 关闭弹窗
+            closePositionPopup();
+            
+            // 播放确认音效
+            playSound('click');
+        }
+        
+        // 更新评分区域
+        function updateRatingSection() {
+            // 检查是否有未评分的玩家
+            const unratedPlayers = allPlayers.filter(player => {
+                return playerRatings[player] === undefined || playerRatings[player] === null;
+            });
+            
+            if (unratedPlayers.length === 0) {
+                // 所有玩家都有评分，隐藏评分区域
+                document.getElementById('ratingSection').style.display = 'none';
+                document.getElementById('ratingTitle').style.display = 'none';
+                return;
+            }
+            
+            // 显示评分区域
+            document.getElementById('ratingSection').style.display = 'block';
+            document.getElementById('ratingTitle').style.display = 'block';
+            
+            const ratingList = document.getElementById('ratingList');
+            ratingList.innerHTML = '';
+            
+            unratedPlayers.forEach(player => {
+                const ratingItem = document.createElement('div');
+                ratingItem.className = 'rating-item';
+                ratingItem.innerHTML = `
+                    <div class="player-name">${player}</div>
+                    <input type="number" class="rating-input" min="1" max="10" value="${playerRatings[player] || 7}" 
+                           onchange="updatePlayerRating('${player}', this.value)">
+                `;
+                ratingList.appendChild(ratingItem);
+            });
+        }
+        
+        // 更新玩家评分
+        function updatePlayerRating(player, rating) {
+            const ratingValue = parseInt(rating);
+            if (ratingValue < 1 || ratingValue > 10) {
+                showAlert('评分必须在1-10之间');
+                return;
+            }
+            
+            playerRatings[player] = ratingValue;
+            playSound('click');
+            
+            // 重新检查是否所有玩家都有评分
+            updateRatingSection();
+        }
+        
+        // 调整数字（分组数量或每组人数）
+        function adjustNumber(type, change) {
+            let elementId, min, max;
+            
+            if (type === 'group') {
+                elementId = 'groupCount';
+                min = 1;
+                max = 5;
+            } else {
+                elementId = 'perGroupCount';
+                min = 1;
+                max = 20;
+            }
+            
+            let current = parseInt(document.getElementById(elementId).textContent);
+            let newValue = current + change;
+            
+            if (newValue >= min && newValue <= max) {
+                document.getElementById(elementId).textContent = newValue;
+            }
+        }
+        
+        // 执行分组
+        function performGrouping() {
+            // 检查是否有未分配位置的玩家
+            const unassignedPlayers = allPlayers.filter(player => !playerPositions[player]);
+            if (unassignedPlayers.length > 0) {
+                showAlert(`有${unassignedPlayers.length}名玩家未分配位置，请先分配位置再分组。`);
+                return;
+            }
+            
+            // 检查分组设置
+            const groupCount = parseInt(document.getElementById('groupCount').textContent);
+            const perGroupCount = parseInt(document.getElementById('perGroupCount').textContent);
+            const totalPlayers = allPlayers.length;
+            
+            if (groupCount * perGroupCount < totalPlayers) {
+                showAlert('分组人数设置低于总人数，请重新设置！');
+                return;
+            }
+            
+            // 播放按键音效
+            playSound('click');
+            
+            // 清空结果容器
+            const resultsContainer = document.getElementById('resultsContainer');
+            resultsContainer.innerHTML = '';
+            resultsContainer.classList.remove('group-animation', 'random-scroll');
+            
+            // 如果是重新分组，播放滚动音效并执行随机动画
+            if (groupingCompleted) {
+                playSound('scroll');
+                resultsContainer.classList.add('random-scroll');
+                
+                // 显示"正在重新分组..."的临时内容
+                resultsContainer.innerHTML = '<div style="text-align: center; padding: 50px; color: #aaa; font-size: 18px;">正在重新分组...</div>';
+                
+                // 延迟执行实际分组
+                setTimeout(() => {
+                    // 执行重新分组算法
+                    currentGroups = regroupPlayers(currentGroups, groupCount);
+                    
+                    // 延迟显示结果以配合动画
+                    setTimeout(() => {
+                        resultsContainer.innerHTML = '';
+                        displayGroups(currentGroups);
+                        resultsContainer.classList.remove('random-scroll');
+                        resultsContainer.classList.add('group-animation');
+                        
+                        // 播放分组完成音效
+                        setTimeout(() => {
+                            playSound('complete');
+                        }, 1900);
+                    }, 500);
+                }, 1000);
+            } else {
+                // 第一次分组
+                playSound('scroll');
+                resultsContainer.classList.add('random-scroll');
+                
+                // 显示"正在分组..."的临时内容
+                resultsContainer.innerHTML = '<div style="text-align: center; padding: 50px; color: #aaa; font-size: 18px;">正在分组...</div>';
+                
+                // 延迟执行实际分组
+                setTimeout(() => {
+                    // 执行分组算法
+                    currentGroups = groupPlayers(groupCount, perGroupCount);
+                    
+                    // 延迟显示结果以配合动画
+                    setTimeout(() => {
+                        resultsContainer.innerHTML = '';
+                        displayGroups(currentGroups);
+                        resultsContainer.classList.remove('random-scroll');
+                        resultsContainer.classList.add('group-animation');
+                        
+                        // 播放分组完成音效
+                        setTimeout(() => {
+                            playSound('complete');
+                        }, 1900);
+                        
+                        // 将按钮文本改为"重新分组"
+                        document.getElementById('groupingBtn').textContent = '重新分组';
+                        groupingCompleted = true;
+                    }, 500);
+                }, 1000);
+            }
+        }
+        
+        // 分组算法 - 重新设计，确保位置平均分配
+        function groupPlayers(groupCount, perGroupCount) {
+            // 准备玩家数据
+            const players = allPlayers.map(player => ({
+                name: player,
+                position: playerPositions[player],
+                // 优先使用临时评分，然后使用playerData中的评分，最后使用playerRatings中的评分
+                rating: tempPlayerRatings[player] !== undefined ? 
+                        tempPlayerRatings[player] : 
+                        (playerData[player] ? playerData[player].rating : playerRatings[player] || 7),
+                isSpecial: specialPlayers.includes(player) && !sameGroupPlayers.includes(player),
+                isSameGroup: sameGroupPlayers.includes(player),
+                isLaoWang: player === '老王'
+            }));
+            
+            // 验证所有玩家都有位置
+            const playersWithoutPosition = players.filter(p => !p.position);
+            if (playersWithoutPosition.length > 0) {
+                console.error("有玩家未分配位置:", playersWithoutPosition);
+                return [];
+            }
+            
+            // 1. 计算每组应分配的基础人数和余数
+            const totalPlayers = players.length;
+            const baseGroupSize = Math.floor(totalPlayers / groupCount);
+            const remainder = totalPlayers % groupCount;
+            
+            // 创建目标人数数组，前remainder组多一人
+            const targetGroupSizes = Array(groupCount).fill(baseGroupSize);
+            for (let i = 0; i < remainder; i++) {
+                targetGroupSizes[i]++;
+            }
+            
+            console.log(`总人数: ${totalPlayers}, 每组基础人数: ${baseGroupSize}, 余数: ${remainder}`);
+            console.log('目标每组人数:', targetGroupSizes);
+            
+            // 2. 初始化分组
+            const groups = Array.from({ length: groupCount }, (_, index) => ({
+                index: index,
+                players: [],
+                totalRating: 0,
+                positionCount: { forward: 0, midfield: 0, defender: 0, goalkeeper: 0 },
+                targetSize: targetGroupSizes[index],
+                specialPlayers: [],
+                sameGroupPlayers: []
+            }));
+            
+            // 3. 先分配同一组人员（如果他们都在当前玩家列表中）
+            const actualSameGroupPlayers = players.filter(p => p.isSameGroup);
+            if (actualSameGroupPlayers.length > 0) {
+                // 检查是否所有同一组人员都在当前玩家列表中
+                if (actualSameGroupPlayers.length === sameGroupPlayers.length) {
+                    // 选择当前人数最少的组来放置同一组人员
+                    groups.sort((a, b) => {
+                        // 如果人数相同，选择总评分较低的组
+                        if (a.players.length === b.players.length) {
+                            return a.totalRating - b.totalRating;
+                        }
+                        return a.players.length - b.players.length;
+                    });
+                    
+                    // 将同一组人员分配到人数最少的组
+                    const targetGroup = groups[0];
+                    actualSameGroupPlayers.forEach(player => {
+                        targetGroup.players.push(player);
+                        targetGroup.totalRating += player.rating;
+                        targetGroup.positionCount[player.position]++;
+                        targetGroup.sameGroupPlayers.push(player.name);
+                    });
+                    
+                    console.log(`已将 ${actualSameGroupPlayers.map(p => p.name).join(', ')} 分配到第${targetGroup.index + 1}组`);
+                } else {
+                    console.warn("部分同一组人员不在当前玩家列表中");
+                }
+            }
+            
+            // 4. 按位置分组玩家（排除已分配的同一组人员）
+            const playersByPosition = {
+                forward: players.filter(p => p.position === 'forward' && !p.isSameGroup),
+                midfield: players.filter(p => p.position === 'midfield' && !p.isSameGroup),
+                defender: players.filter(p => p.position === 'defender' && !p.isSameGroup),
+                goalkeeper: players.filter(p => p.position === 'goalkeeper' && !p.isSameGroup)
+            };
+            
+            // 5. 分配特别人员（排除同一组人员）
+            const specialPlayersList = players.filter(p => p.isSpecial && !p.isSameGroup);
+            
+            // 6. 先分离老王
+            const laoWangPlayer = players.find(p => p.isLaoWang && !p.isSameGroup);
+            const regularPlayers = {
+                forward: playersByPosition.forward.filter(p => !p.isSpecial && !p.isLaoWang),
+                midfield: playersByPosition.midfield.filter(p => !p.isSpecial && !p.isLaoWang),
+                defender: playersByPosition.defender.filter(p => !p.isSpecial && !p.isLaoWang),
+                goalkeeper: playersByPosition.goalkeeper.filter(p => !p.isSpecial && !p.isLaoWang)
+            };
+            
+            // 7. 按位置平均分配常规球员
+            const positionOrder = ['forward', 'midfield', 'defender', 'goalkeeper'];
+            
+            positionOrder.forEach(position => {
+                const positionPlayers = regularPlayers[position];
+                
+                // 按评分从高到低排序
+                positionPlayers.sort((a, b) => b.rating - a.rating);
+                
+                // 计算每个位置应分配到每组的数量
+                const playersPerGroup = Math.floor(positionPlayers.length / groupCount);
+                const extraPlayers = positionPlayers.length % groupCount;
+                
+                // 为每组分配基础数量
+                for (let i = 0; i < groupCount; i++) {
+                    const startIndex = i * playersPerGroup;
+                    const endIndex = startIndex + playersPerGroup;
+                    const groupPlayers = positionPlayers.slice(startIndex, endIndex);
+                    
+                    groups[i].players.push(...groupPlayers);
+                    groups[i].totalRating += groupPlayers.reduce((sum, p) => sum + p.rating, 0);
+                    groups[i].positionCount[position] += groupPlayers.length;
+                }
+                
+                // 分配额外的球员（从第一组开始）
+                if (extraPlayers > 0) {
+                    const extraStartIndex = positionPlayers.length - extraPlayers;
+                    for (let i = 0; i < extraPlayers; i++) {
+                        const player = positionPlayers[extraStartIndex + i];
+                        groups[i].players.push(player);
+                        groups[i].totalRating += player.rating;
+                        groups[i].positionCount[position]++;
+                    }
+                }
+            });
+            
+            // 8. 分配特别人员
+            // 将特别人员按评分排序
+            specialPlayersList.sort((a, b) => b.rating - a.rating);
+            
+            // 将特别人员分配到总评分较低的组
+            specialPlayersList.forEach(player => {
+                // 找到总评分最低的组
+                groups.sort((a, b) => {
+                    if (a.players.length === b.players.length) {
+                        return a.totalRating - b.totalRating;
+                    }
+                    return a.players.length - b.players.length;
+                });
+                
+                const targetGroup = groups[0];
+                targetGroup.players.push(player);
+                targetGroup.totalRating += player.rating;
+                targetGroup.positionCount[player.position]++;
+                targetGroup.specialPlayers.push(player.name);
+            });
+            
+            // 9. 分配老王到总分较低的组（如果总人数不平均，老王会在人数较多的组）
+            if (laoWangPlayer) {
+                // 先找到当前每组人数，确定哪些组应该多一人
+                const groupSizes = groups.map(g => g.players.length);
+                const maxSize = Math.max(...groupSizes);
+                
+                // 找出人数最多的组（这些组应该多一人）
+                const maxSizeGroups = groups.filter(g => g.players.length === maxSize);
+                
+                // 在人数最多的组中，找到总分最低的组
+                maxSizeGroups.sort((a, b) => a.totalRating - b.totalRating);
+                const targetGroup = maxSizeGroups[0];
+                
+                // 将老王分配到该组
+                targetGroup.players.push(laoWangPlayer);
+                targetGroup.totalRating += laoWangPlayer.rating;
+                targetGroup.positionCount[laoWangPlayer.position]++;
+                
+                console.log(`已将"老王"分配到第${targetGroup.index + 1}组（总分较低的组）`);
+            }
+            
+            // 10. 检查并调整每组人数，确保符合目标人数
+            groups.forEach((group, index) => {
+                const targetSize = targetGroupSizes[index];
+                const currentSize = group.players.length;
+                
+                if (currentSize > targetSize) {
+                    // 如果当前人数超过目标，移除评分最低的球员
+                    const playersToRemove = currentSize - targetSize;
+                    for (let i = 0; i < playersToRemove; i++) {
+                        // 找到评分最低的非特别人员、非老王球员
+                        const regularPlayersInGroup = group.players.filter(p => !p.isSpecial && !p.isSameGroup && !p.isLaoWang);
+                        if (regularPlayersInGroup.length > 0) {
+                            regularPlayersInGroup.sort((a, b) => a.rating - b.rating);
+                            const playerToRemove = regularPlayersInGroup[0];
+                            const removeIndex = group.players.indexOf(playerToRemove);
+                            if (removeIndex !== -1) {
+                                group.players.splice(removeIndex, 1);
+                                group.totalRating -= playerToRemove.rating;
+                                group.positionCount[playerToRemove.position]--;
+                            }
+                        }
+                    }
+                } else if (currentSize < targetSize) {
+                    // 如果当前人数少于目标，从其他组调来球员
+                    const playersToAdd = targetSize - currentSize;
+                    for (let i = 0; i < playersToAdd; i++) {
+                        // 从人数最多的组中寻找评分最低的常规球员
+                        let sourceGroup = null;
+                        let playerToMove = null;
+                        
+                        // 找到人数最多的组（排除当前组）
+                        const otherGroups = groups.filter((g, idx) => idx !== index && g.players.length > targetGroupSizes[idx]);
+                        if (otherGroups.length > 0) {
+                            otherGroups.sort((a, b) => b.players.length - a.players.length);
+                            sourceGroup = otherGroups[0];
+                            
+                            // 在该组中找到评分最低的常规球员
+                            const regularPlayersInSource = sourceGroup.players.filter(p => !p.isSpecial && !p.isSameGroup && !p.isLaoWang);
+                            if (regularPlayersInSource.length > 0) {
+                                regularPlayersInSource.sort((a, b) => a.rating - b.rating);
+                                playerToMove = regularPlayersInSource[0];
+                            }
+                        }
+                        
+                        if (sourceGroup && playerToMove) {
+                            // 从源组移除
+                            const removeIndex = sourceGroup.players.indexOf(playerToMove);
+                            sourceGroup.players.splice(removeIndex, 1);
+                            sourceGroup.totalRating -= playerToMove.rating;
+                            sourceGroup.positionCount[playerToMove.position]--;
+                            
+                            // 添加到当前组
+                            group.players.push(playerToMove);
+                            group.totalRating += playerToMove.rating;
+                            group.positionCount[playerToMove.position]++;
+                        }
+                    }
+                }
+            });
+            
+            // 11. 按位置排序每组内的玩家
+            groups.forEach(group => {
+                group.players.sort((a, b) => {
+                    const orderA = positionOrder.indexOf(a.position);
+                    const orderB = positionOrder.indexOf(b.position);
+                    if (orderA !== orderB) {
+                        return orderA - orderB;
+                    }
+                    return b.rating - a.rating;
+                });
+            });
+            
+            // 12. 验证分组结果
+            validateGroups(groups, players, targetGroupSizes);
+            
+            return groups;
+        }
+        
+        // 重新分组算法 - 确保同位置人员相互调换
+        function regroupPlayers(previousGroups, groupCount) {
+            // 深拷贝之前的组
+            const groups = JSON.parse(JSON.stringify(previousGroups));
+            
+            // 收集所有玩家
+            const allPlayersInGroups = groups.flatMap(group => group.players);
+            
+            // 验证玩家总数是否一致
+            if (allPlayersInGroups.length !== allPlayers.length) {
+                console.error("玩家总数不一致，使用第一次分组逻辑");
+                return groupPlayers(groupCount, 
+                    Math.ceil(allPlayers.length / groupCount));
+            }
+            
+            // 保存每组的目标人数和位置分布
+            const targetSizes = groups.map(g => g.players.length);
+            const positionDistributions = groups.map(g => ({
+                forward: g.positionCount.forward || 0,
+                midfield: g.positionCount.midfield || 0,
+                defender: g.positionCount.defender || 0,
+                goalkeeper: g.positionCount.goalkeeper || 0
+            }));
+            
+            // 按位置分组所有玩家
+            const playersByPosition = {
+                forward: allPlayersInGroups.filter(p => p.position === 'forward'),
+                midfield: allPlayersInGroups.filter(p => p.position === 'midfield'),
+                defender: allPlayersInGroups.filter(p => p.position === 'defender'),
+                goalkeeper: allPlayersInGroups.filter(p => p.position === 'goalkeeper')
+            };
+            
+            // 对每个位置的玩家按评分排序（从高到低）
+            Object.keys(playersByPosition).forEach(position => {
+                playersByPosition[position].sort((a, b) => b.rating - a.rating);
+            });
+            
+            // 清空所有组
+            groups.forEach((group, index) => {
+                group.players = [];
+                group.totalRating = 0;
+                group.positionCount = { forward: 0, midfield: 0, defender: 0, goalkeeper: 0 };
+                group.specialPlayers = [];
+                group.sameGroupPlayers = [];
+                group.targetSize = targetSizes[index];
+            });
+            
+            // 重新分配玩家，确保同位置人员相互调换且总分相近
+            const positionOrder = ['forward', 'midfield', 'defender', 'goalkeeper'];
+            
+            positionOrder.forEach(position => {
+                const positionPlayers = playersByPosition[position];
+                
+                // 按照蛇形分配法分配球员，确保总分相近
+                // 1. 计算每个位置应分配到每组的数量
+                const positionCount = positionPlayers.length;
+                const basePerGroup = Math.floor(positionCount / groupCount);
+                const extraGroups = positionCount % groupCount;
+                
+                // 2. 确定每组的分配数量
+                const groupAllocations = Array(groupCount).fill(basePerGroup);
+                for (let i = 0; i < extraGroups; i++) {
+                    groupAllocations[i]++;
+                }
+                
+                // 3. 使用蛇形分配法分配球员
+                let playerIndex = 0;
+                let forwardDirection = true; // true表示从左到右，false表示从右到左
+                
+                while (playerIndex < positionPlayers.length) {
+                    if (forwardDirection) {
+                        // 从左到右分配
+                        for (let i = 0; i < groupCount && playerIndex < positionPlayers.length; i++) {
+                            // 检查该组是否还需要该位置的球员
+                            if (groupAllocations[i] > 0) {
+                                const player = positionPlayers[playerIndex];
+                                groups[i].players.push(player);
+                                groups[i].totalRating += player.rating;
+                                groups[i].positionCount[position] = (groups[i].positionCount[position] || 0) + 1;
+                                
+                                if (player.isSpecial) {
+                                    groups[i].specialPlayers.push(player.name);
+                                }
+                                if (player.isSameGroup) {
+                                    groups[i].sameGroupPlayers.push(player.name);
+                                }
+                                
+                                playerIndex++;
+                                groupAllocations[i]--;
+                            }
+                        }
+                    } else {
+                        // 从右到左分配
+                        for (let i = groupCount - 1; i >= 0 && playerIndex < positionPlayers.length; i--) {
+                            // 检查该组是否还需要该位置的球员
+                            if (groupAllocations[i] > 0) {
+                                const player = positionPlayers[playerIndex];
+                                groups[i].players.push(player);
+                                groups[i].totalRating += player.rating;
+                                groups[i].positionCount[position] = (groups[i].positionCount[position] || 0) + 1;
+                                
+                                if (player.isSpecial) {
+                                    groups[i].specialPlayers.push(player.name);
+                                }
+                                if (player.isSameGroup) {
+                                    groups[i].sameGroupPlayers.push(player.name);
+                                }
+                                
+                                playerIndex++;
+                                groupAllocations[i]--;
+                            }
+                        }
+                    }
+                    // 改变方向
+                    forwardDirection = !forwardDirection;
+                }
+            });
+            
+            // 按位置排序每组内的玩家
+            groups.forEach(group => {
+                group.players.sort((a, b) => {
+                    const orderA = positionOrder.indexOf(a.position);
+                    const orderB = positionOrder.indexOf(b.position);
+                    if (orderA !== orderB) {
+                        return orderA - orderB;
+                    }
+                    return b.rating - a.rating;
+                });
+            });
+            
+            // 验证重新分组结果
+            validateRegroup(groups, previousGroups);
+            
+            return groups;
+        }
+        
+        // 显示分组结果
+        function displayGroups(groups) {
+            const resultsContainer = document.getElementById('resultsContainer');
+            resultsContainer.innerHTML = '';
+            
+            // 清空交换选择
+            selectedPlayerForSwap = null;
+            
+            // 分组背景颜色 - 深色调红色、蓝色、绿色等
+            const groupBackgrounds = [
+                'linear-gradient(135deg, #4a1a1a, #2a0a0a)', // 深红色
+                'linear-gradient(135deg, #1a2a4a, #0a1a2a)', // 深蓝色
+                'linear-gradient(135deg, #1a4a2a, #0a2a1a)', // 深绿色
+                'linear-gradient(135deg, #4a2a1a, #2a1a0a)', // 深橙色
+                'linear-gradient(135deg, #3a1a4a, #2a0a3a)'  // 深紫色
+            ];
+            
+            groups.forEach((group, index) => {
+                if (group.players.length === 0) return;
+                
+                const groupContainer = document.createElement('div');
+                groupContainer.className = 'group-container';
+                groupContainer.style.background = groupBackgrounds[index % groupBackgrounds.length];
+                groupContainer.dataset.groupIndex = index;
+                
+                // 按位置分组玩家
+                const playersByPosition = {
+                    forward: group.players.filter(p => p.position === 'forward'),
+                    midfield: group.players.filter(p => p.position === 'midfield'),
+                    defender: group.players.filter(p => p.position === 'defender'),
+                    goalkeeper: group.players.filter(p => p.position === 'goalkeeper')
+                };
+                
+                groupContainer.innerHTML = `
+                    <div class="group-header">
+                        <div>第 ${index + 1} 组</div>
+                        <div class="group-stats">
+                            <span>${group.players.length}人</span>
+                            <span>${group.totalRating}</span>
+                        </div>
+                    </div>
+                `;
+                
+                // 显示同一组人员标记（如果有）
+                if (group.sameGroupPlayers && group.sameGroupPlayers.length > 0) {
+                    const sameGroupMarker = document.createElement('div');
+                    sameGroupMarker.style.cssText = `
+                        background-color: rgba(74, 158, 255, 0.2);
+                        border: 1px solid #4a9eff;
+                        border-radius: 8px;
+                        padding: 8px 12px;
+                        margin-bottom: 10px;
+                        font-size: 14px;
+                        color: #4a9eff;
+                        font-weight: 600;
+                    `;
+                }
+                
+                // 按位置顺序显示玩家
+                ['forward', 'midfield', 'defender', 'goalkeeper'].forEach(position => {
+                    const players = playersByPosition[position];
+                    if (players.length === 0) return;
+                    
+                    const playerRow = document.createElement('div');
+                    playerRow.className = 'player-row';
+                    playerRow.dataset.position = position;
+                    
+                    players.forEach(player => {
+                        const playerElement = document.createElement('div');
+                        playerElement.className = 'result-player';
+                        playerElement.dataset.playerName = player.name;
+                        playerElement.dataset.position = player.position;
+                        playerElement.dataset.groupIndex = index;
+                        playerElement.dataset.rating = player.rating;
+                        
+                        playerElement.innerHTML = `
+                            <span class="position-icon">${positionIcons[position] || '⚽'}</span>
+                            <span class="position-label">${positionChinese[position] || position}</span>
+                            ${player.name}
+                        `;
+                        
+                        // 添加点击事件（用于点击交换）
+                        playerElement.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            handlePlayerClick(this);
+                        });
+                        
+                        // 添加触摸事件（用于拖拽交换）
+                        playerElement.addEventListener('touchstart', function(e) {
+                            e.stopPropagation();
+                            handlePlayerTouchStart(this, e);
+                        }, { passive: false });
+                        
+                        // 添加鼠标事件（用于拖拽交换）
+                        playerElement.addEventListener('mousedown', function(e) {
+                            e.stopPropagation();
+                            handlePlayerMouseDown(this, e);
+                        });
+                        
+                        playerRow.appendChild(playerElement);
+                    });
+                    
+                    groupContainer.appendChild(playerRow);
+                });
+                
+                // 为组容器添加拖拽事件
+                groupContainer.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    if (isDraggingPlayer) {
+                        this.classList.add('drag-over');
+                    }
+                });
+                
+                groupContainer.addEventListener('dragleave', function() {
+                    this.classList.remove('drag-over');
+                });
+                
+                groupContainer.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    this.classList.remove('drag-over');
+                    if (draggedPlayer && draggedPlayer.groupIndex !== parseInt(this.dataset.groupIndex)) {
+                        handlePlayerDrop(draggedPlayer, parseInt(this.dataset.groupIndex));
+                    }
+                });
+                
+                resultsContainer.appendChild(groupContainer);
+            });
+        }
+        
+        // 处理玩家点击（用于点击交换）- 修改：去掉提示窗
+        function handlePlayerClick(playerElement) {
+            // 如果没有分组完成，不处理
+            if (!groupingCompleted) return;
+            
+            const playerName = playerElement.dataset.playerName;
+            const position = playerElement.dataset.position;
+            const groupIndex = parseInt(playerElement.dataset.groupIndex);
+            const rating = parseInt(playerElement.dataset.rating);
+            
+            // 播放点击音效
+            playSound('click');
+            
+            // 如果还没有选中第一个玩家
+            if (!selectedPlayerForSwap) {
+                // 选中第一个玩家
+                selectedPlayerForSwap = {
+                    name: playerName,
+                    position: position,
+                    groupIndex: groupIndex,
+                    rating: rating,
+                    element: playerElement
+                };
+                
+                // 添加选中样式
+                playerElement.classList.add('selected');
+                
+                // 添加交换图标
+                const swapIcon = document.createElement('span');
+                swapIcon.className = 'swap-icon';
+                swapIcon.innerHTML = '↔';
+                playerElement.appendChild(swapIcon);
+                
+                // 去掉提示窗，改为在页面顶部显示简短提示
+                // showAlert(`已选中 ${playerName}，请点击另一名玩家进行交换`);
+            } 
+            // 如果已经选中第一个玩家，且点击的不是同一个玩家
+            else if (selectedPlayerForSwap.name !== playerName) {
+                // 交换两个玩家
+                swapPlayers(selectedPlayerForSwap, {
+                    name: playerName,
+                    position: position,
+                    groupIndex: groupIndex,
+                    rating: rating,
+                    element: playerElement
+                });
+                
+                // 清除选中状态
+                clearSwapSelection();
+            } 
+            // 如果点击的是同一个玩家，取消选中
+            else {
+                clearSwapSelection();
+            }
+        }
+        
+        // 处理触摸开始（用于拖拽交换）
+        function handlePlayerTouchStart(playerElement, e) {
+            // 如果没有分组完成，不处理
+            if (!groupingCompleted) return;
+            
+            const playerName = playerElement.dataset.playerName;
+            const position = playerElement.dataset.position;
+            const groupIndex = parseInt(playerElement.dataset.groupIndex);
+            const rating = parseInt(playerElement.dataset.rating);
+            
+            // 记录开始位置
+            const touch = e.touches[0];
+            dragStartX = touch.clientX;
+            dragStartY = touch.clientY;
+            
+            // 设置拖拽玩家信息
+            draggedPlayer = {
+                name: playerName,
+                position: position,
+                groupIndex: groupIndex,
+                rating: rating,
+                element: playerElement
+            };
+            
+            // 设置定时器，判断是否为长按
+            const touchTimer = setTimeout(() => {
+                startDragging(playerElement, touch.clientX, touch.clientY);
+                isDraggingPlayer = true;
+            }, 300); // 300ms视为长按
+            
+            // 添加触摸结束事件，取消定时器
+            const touchEndHandler = function() {
+                clearTimeout(touchTimer);
+                playerElement.removeEventListener('touchend', touchEndHandler);
+                playerElement.removeEventListener('touchmove', touchMoveHandler);
+            };
+            
+            // 添加触摸移动事件，如果移动距离超过阈值，取消长按
+            const touchMoveHandler = function(e) {
+                const touch = e.touches[0];
+                const deltaX = Math.abs(touch.clientX - dragStartX);
+                const deltaY = Math.abs(touch.clientY - dragStartY);
+                
+                if (deltaX > 10 || deltaY > 10) {
+                    clearTimeout(touchTimer);
+                    playerElement.removeEventListener('touchend', touchEndHandler);
+                    playerElement.removeEventListener('touchmove', touchMoveHandler);
+                }
+            };
+            
+            playerElement.addEventListener('touchend', touchEndHandler);
+            playerElement.addEventListener('touchmove', touchMoveHandler);
+        }
+        
+        // 处理鼠标按下（用于拖拽交换）
+        function handlePlayerMouseDown(playerElement, e) {
+            // 如果没有分组完成，不处理
+            if (!groupingCompleted) return;
+            
+            const playerName = playerElement.dataset.playerName;
+            const position = playerElement.dataset.position;
+            const groupIndex = parseInt(playerElement.dataset.groupIndex);
+            const rating = parseInt(playerElement.dataset.rating);
+            
+            // 记录开始位置
+            dragStartX = e.clientX;
+            dragStartY = e.clientY;
+            
+            // 设置拖拽玩家信息
+            draggedPlayer = {
+                name: playerName,
+                position: position,
+                groupIndex: groupIndex,
+                rating: rating,
+                element: playerElement
+            };
+            
+            // 设置定时器，判断是否为长按
+            const mouseTimer = setTimeout(() => {
+                startDragging(playerElement, e.clientX, e.clientY);
+                isDraggingPlayer = true;
+            }, 300); // 300ms视为长按
+            
+            // 添加鼠标抬起事件，取消定时器
+            const mouseUpHandler = function() {
+                clearTimeout(mouseTimer);
+                playerElement.removeEventListener('mouseup', mouseUpHandler);
+                playerElement.removeEventListener('mousemove', mouseMoveHandler);
+            };
+            
+            // 添加鼠标移动事件，如果移动距离超过阈值，取消长按
+            const mouseMoveHandler = function(e) {
+                const deltaX = Math.abs(e.clientX - dragStartX);
+                const deltaY = Math.abs(e.clientY - dragStartY);
+                
+                if (deltaX > 10 || deltaY > 10) {
+                    clearTimeout(mouseTimer);
+                    playerElement.removeEventListener('mouseup', mouseUpHandler);
+                    playerElement.removeEventListener('mousemove', mouseMoveHandler);
+                }
+            };
+            
+            playerElement.addEventListener('mouseup', mouseUpHandler);
+            playerElement.addEventListener('mousemove', mouseMoveHandler);
+        }
+        
+        // 开始拖拽
+        function startDragging(playerElement, x, y) {
+            // 添加拖拽样式
+            playerElement.classList.add('dragging');
+            
+            // 显示拖拽指示器
+            const dragIndicator = document.getElementById('dragIndicator');
+            dragIndicator.style.display = 'block';
+            
+            // 设置拖拽预览
+            dragPreview.innerHTML = `
+                <span style="margin-right: 5px;">${positionIcons[playerElement.dataset.position] || '⚽'}</span>
+                ${playerElement.dataset.playerName}
+            `;
+            dragPreview.style.left = x + 'px';
+            dragPreview.style.top = y + 'px';
+            
+            // 播放拖拽开始音效
+            playSound('click');
+        }
+        
+        // 处理触摸移动
+        function handleTouchMove(e) {
+            if (!isDraggingPlayer) return;
+            
+            e.preventDefault();
+            
+            const touch = e.touches[0];
+            dragPreview.style.left = touch.clientX + 'px';
+            dragPreview.style.top = touch.clientY + 'px';
+            
+            // 检查是否在某个组上方
+            const groupContainers = document.querySelectorAll('.group-container');
+            let overGroup = null;
+            
+            groupContainers.forEach(container => {
+                const rect = container.getBoundingClientRect();
+                if (touch.clientX >= rect.left && touch.clientX <= rect.right &&
+                    touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+                    overGroup = container;
+                }
+            });
+            
+            // 更新拖拽状态
+            groupContainers.forEach(container => {
+                container.classList.remove('drag-over');
+            });
+            
+            if (overGroup && parseInt(overGroup.dataset.groupIndex) !== draggedPlayer.groupIndex) {
+                overGroup.classList.add('drag-over');
+            }
+        }
+        
+        // 处理鼠标移动
+        function handleMouseMove(e) {
+            if (!isDraggingPlayer) return;
+            
+            dragPreview.style.left = e.clientX + 'px';
+            dragPreview.style.top = e.clientY + 'px';
+            
+            // 检查是否在某个组上方
+            const groupContainers = document.querySelectorAll('.group-container');
+            let overGroup = null;
+            
+            groupContainers.forEach(container => {
+                const rect = container.getBoundingClientRect();
+                if (e.clientX >= rect.left && e.clientX <= rect.right &&
+                    e.clientY >= rect.top && e.clientY <= rect.bottom) {
+                    overGroup = container;
+                }
+            });
+            
+            // 更新拖拽状态
+            groupContainers.forEach(container => {
+                container.classList.remove('drag-over');
+            });
+            
+            if (overGroup && parseInt(overGroup.dataset.groupIndex) !== draggedPlayer.groupIndex) {
+                overGroup.classList.add('drag-over');
+            }
+        }
+        
+        // 处理触摸结束
+        function handleTouchEnd(e) {
+            if (!isDraggingPlayer) return;
+            
+            isDraggingPlayer = false;
+            
+            // 隐藏拖拽指示器
+            const dragIndicator = document.getElementById('dragIndicator');
+            dragIndicator.style.display = 'none';
+            
+            // 移除拖拽样式
+            if (draggedPlayer && draggedPlayer.element) {
+                draggedPlayer.element.classList.remove('dragging');
+            }
+            
+            // 检查是否在某个球员上方
+            const touch = e.changedTouches[0];
+            const elementsAtPoint = document.elementsFromPoint(touch.clientX, touch.clientY);
+            
+            let targetGroupIndex = null;
+            let targetPlayerElement = null;
+            
+            // 查找目标组和目标球员
+            elementsAtPoint.forEach(element => {
+                // 检查是否是球员元素
+                if (element.classList && element.classList.contains('result-player')) {
+                    targetPlayerElement = element;
+                    const groupContainer = element.closest('.group-container');
+                    if (groupContainer) {
+                        targetGroupIndex = parseInt(groupContainer.dataset.groupIndex);
+                    }
+                }
+                // 如果还没有找到球员元素，检查是否是组容器
+                else if (!targetGroupIndex && element.classList && element.classList.contains('group-container')) {
+                    targetGroupIndex = parseInt(element.dataset.groupIndex);
+                }
+                // 如果还没有找到组，检查是否是组容器的子元素
+                else if (!targetGroupIndex && element.closest('.group-container')) {
+                    const groupContainer = element.closest('.group-container');
+                    targetGroupIndex = parseInt(groupContainer.dataset.groupIndex);
+                }
+            });
+            
+            // 清除所有组的拖拽状态
+            document.querySelectorAll('.group-container').forEach(container => {
+                container.classList.remove('drag-over');
+            });
+            
+            // 记录拖拽目标元素
+            lastDragTargetElement = targetPlayerElement;
+            
+            // 如果拖拽到了其他组，执行相应操作
+            if (targetGroupIndex !== null && draggedPlayer && targetGroupIndex !== draggedPlayer.groupIndex) {
+                handlePlayerDrop(draggedPlayer, targetGroupIndex);
+            }
+            
+            // 重置拖拽状态
+            draggedPlayer = null;
+        }
+        
+        // 处理鼠标抬起
+        function handleMouseUp(e) {
+            if (!isDraggingPlayer) return;
+            
+            isDraggingPlayer = false;
+            
+            // 隐藏拖拽指示器
+            const dragIndicator = document.getElementById('dragIndicator');
+            dragIndicator.style.display = 'none';
+            
+            // 移除拖拽样式
+            if (draggedPlayer && draggedPlayer.element) {
+                draggedPlayer.element.classList.remove('dragging');
+            }
+            
+            // 检查是否在某个球员上方
+            const elementsAtPoint = document.elementsFromPoint(e.clientX, e.clientY);
+            
+            let targetGroupIndex = null;
+            let targetPlayerElement = null;
+            
+            // 查找目标组和目标球员
+            elementsAtPoint.forEach(element => {
+                // 检查是否是球员元素
+                if (element.classList && element.classList.contains('result-player')) {
+                    targetPlayerElement = element;
+                    const groupContainer = element.closest('.group-container');
+                    if (groupContainer) {
+                        targetGroupIndex = parseInt(groupContainer.dataset.groupIndex);
+                    }
+                }
+                // 如果还没有找到球员元素，检查是否是组容器
+                else if (!targetGroupIndex && element.classList && element.classList.contains('group-container')) {
+                    targetGroupIndex = parseInt(element.dataset.groupIndex);
+                }
+                // 如果还没有找到组，检查是否是组容器的子元素
+                else if (!targetGroupIndex && element.closest('.group-container')) {
+                    const groupContainer = element.closest('.group-container');
+                    targetGroupIndex = parseInt(groupContainer.dataset.groupIndex);
+                }
+            });
+            
+            // 清除所有组的拖拽状态
+            document.querySelectorAll('.group-container').forEach(container => {
+                container.classList.remove('drag-over');
+            });
+            
+            // 记录拖拽目标元素
+            lastDragTargetElement = targetPlayerElement;
+            
+            // 如果拖拽到了其他组，执行相应操作
+            if (targetGroupIndex !== null && draggedPlayer && targetGroupIndex !== draggedPlayer.groupIndex) {
+                handlePlayerDrop(draggedPlayer, targetGroupIndex);
+            }
+            
+            // 重置拖拽状态
+            draggedPlayer = null;
+        }
+        
+        // 处理玩家放置
+        function handlePlayerDrop(sourcePlayer, targetGroupIndex) {
+            // 找到目标组
+            const targetGroup = currentGroups[targetGroupIndex];
+            const sourceGroup = currentGroups[sourcePlayer.groupIndex];
+            
+            // 获取拖拽结束时的目标元素
+            let targetPlayer = null;
+            
+            // 从全局变量获取拖拽结束时的目标元素
+            if (lastDragTargetElement && lastDragTargetElement.classList.contains('result-player')) {
+                // 获取目标球员信息
+                const targetElement = lastDragTargetElement;
+                targetPlayer = {
+                    name: targetElement.dataset.playerName,
+                    position: targetElement.dataset.position,
+                    groupIndex: targetGroupIndex,
+                    rating: parseInt(targetElement.dataset.rating),
+                    index: -1
+                };
+                
+                // 在目标组中查找该球员的索引
+                for (let i = 0; i < targetGroup.players.length; i++) {
+                    if (targetGroup.players[i].name === targetPlayer.name) {
+                        targetPlayer.index = i;
+                        break;
+                    }
+                }
+            }
+            
+            // 如果有目标球员，执行交换
+            if (targetPlayer && targetPlayer.index !== -1) {
+                // 在源组中查找源玩家
+                let sourcePlayerIndex = -1;
+                for (let i = 0; i < sourceGroup.players.length; i++) {
+                    if (sourceGroup.players[i].name === sourcePlayer.name) {
+                        sourcePlayerIndex = i;
+                        break;
+                    }
+                }
+                
+                if (sourcePlayerIndex !== -1) {
+                    // 交换玩家
+                    swapPlayers({
+                        name: sourcePlayer.name,
+                        position: sourcePlayer.position,
+                        groupIndex: sourcePlayer.groupIndex,
+                        rating: sourcePlayer.rating,
+                        index: sourcePlayerIndex
+                    }, targetPlayer);
+                    
+                    // 播放交换音效
+                    playSound('swapSound');
+                }
+            } else {
+                // 如果没有目标球员，直接移动到目标组
+                movePlayerToGroup(sourcePlayer, targetGroupIndex);
+                
+                // 播放移动音效
+                playSound('swapSound');
+            }
+            
+            // 重置目标元素
+            lastDragTargetElement = null;
+        }
+        
+        // 交换两个玩家
+        function swapPlayers(player1, player2) {
+            // 获取两个组
+            const group1 = currentGroups[player1.groupIndex];
+            const group2 = currentGroups[player2.groupIndex];
+            
+            // 在组1中查找玩家1
+            let player1Index = -1;
+            for (let i = 0; i < group1.players.length; i++) {
+                if (group1.players[i].name === player1.name) {
+                    player1Index = i;
+                    break;
+                }
+            }
+            
+            // 在组2中查找玩家2
+            let player2Index = -1;
+            for (let i = 0; i < group2.players.length; i++) {
+                if (group2.players[i].name === player2.name) {
+                    player2Index = i;
+                    break;
+                }
+            }
+            
+            if (player1Index !== -1 && player2Index !== -1) {
+                // 交换玩家对象
+                const tempPlayer = group1.players[player1Index];
+                group1.players[player1Index] = group2.players[player2Index];
+                group2.players[player2Index] = tempPlayer;
+                
+                // 更新位置计数
+                group1.positionCount[group1.players[player1Index].position] = (group1.positionCount[group1.players[player1Index].position] || 0) + 1;
+                group1.positionCount[player1.position] = (group1.positionCount[player1.position] || 0) - 1;
+                
+                group2.positionCount[group2.players[player2Index].position] = (group2.positionCount[group2.players[player2Index].position] || 0) + 1;
+                group2.positionCount[player2.position] = (group2.positionCount[player2.position] || 0) - 1;
+                
+                // 更新总分
+                group1.totalRating = group1.totalRating - player1.rating + player2.rating;
+                group2.totalRating = group2.totalRating - player2.rating + player1.rating;
+                
+                // 更新特别人员列表
+                if (player1.isSpecial) {
+                    const index1 = group1.specialPlayers.indexOf(player1.name);
+                    if (index1 !== -1) {
+                        group1.specialPlayers.splice(index1, 1);
+                    }
+                    group2.specialPlayers.push(player1.name);
+                }
+                
+                if (player2.isSpecial) {
+                    const index2 = group2.specialPlayers.indexOf(player2.name);
+                    if (index2 !== -1) {
+                        group2.specialPlayers.splice(index2, 1);
+                    }
+                    group1.specialPlayers.push(player2.name);
+                }
+                
+                // 更新同一组人员列表
+                if (player1.isSameGroup) {
+                    const index1 = group1.sameGroupPlayers.indexOf(player1.name);
+                    if (index1 !== -1) {
+                        group1.sameGroupPlayers.splice(index1, 1);
+                    }
+                    group2.sameGroupPlayers.push(player1.name);
+                }
+                
+                if (player2.isSameGroup) {
+                    const index2 = group2.sameGroupPlayers.indexOf(player2.name);
+                    if (index2 !== -1) {
+                        group2.sameGroupPlayers.splice(index2, 1);
+                    }
+                    group1.sameGroupPlayers.push(player2.name);
+                }
+                
+                // 重新按位置排序每组内的玩家
+                const positionOrder = ['forward', 'midfield', 'defender', 'goalkeeper'];
+                group1.players.sort((a, b) => {
+                    const orderA = positionOrder.indexOf(a.position);
+                    const orderB = positionOrder.indexOf(b.position);
+                    if (orderA !== orderB) {
+                        return orderA - orderB;
+                    }
+                    return b.rating - a.rating;
+                });
+                
+                group2.players.sort((a, b) => {
+                    const orderA = positionOrder.indexOf(a.position);
+                    const orderB = positionOrder.indexOf(b.position);
+                    if (orderA !== orderB) {
+                        return orderA - orderB;
+                    }
+                    return b.rating - a.rating;
+                });
+                
+                // 重新显示分组结果
+                displayGroups(currentGroups);
+                
+                // 显示交换成功提示
+                showAlert(`已交换 ${player1.name} 和 ${player2.name}`);
+                
+                // 播放交换音效
+                playSound('swapSound');
+            }
+        }
+        
+        // 移动玩家到另一组
+        function movePlayerToGroup(player, targetGroupIndex) {
+            // 获取源组和目标组
+            const sourceGroup = currentGroups[player.groupIndex];
+            const targetGroup = currentGroups[targetGroupIndex];
+            
+            // 在源组中查找玩家
+            let playerIndex = -1;
+            let playerObj = null;
+            for (let i = 0; i < sourceGroup.players.length; i++) {
+                if (sourceGroup.players[i].name === player.name) {
+                    playerIndex = i;
+                    playerObj = sourceGroup.players[i];
+                    break;
+                }
+            }
+            
+            if (playerIndex !== -1 && playerObj) {
+                // 从源组移除玩家
+                sourceGroup.players.splice(playerIndex, 1);
+                sourceGroup.positionCount[player.position] = (sourceGroup.positionCount[player.position] || 0) - 1;
+                sourceGroup.totalRating -= player.rating;
+                
+                // 从特别人员列表中移除
+                if (playerObj.isSpecial) {
+                    const index = sourceGroup.specialPlayers.indexOf(player.name);
+                    if (index !== -1) {
+                        sourceGroup.specialPlayers.splice(index, 1);
+                    }
+                }
+                
+                // 从同一组人员列表中移除
+                if (playerObj.isSameGroup) {
+                    const index = sourceGroup.sameGroupPlayers.indexOf(player.name);
+                    if (index !== -1) {
+                        sourceGroup.sameGroupPlayers.splice(index, 1);
+                    }
+                }
+                
+                // 添加到目标组
+                targetGroup.players.push(playerObj);
+                targetGroup.positionCount[player.position] = (targetGroup.positionCount[player.position] || 0) + 1;
+                targetGroup.totalRating += player.rating;
+                
+                // 添加到特别人员列表
+                if (playerObj.isSpecial) {
+                    targetGroup.specialPlayers.push(player.name);
+                }
+                
+                // 添加到同一组人员列表
+                if (playerObj.isSameGroup) {
+                    targetGroup.sameGroupPlayers.push(player.name);
+                }
+                
+                // 重新按位置排序每组内的玩家
+                const positionOrder = ['forward', 'midfield', 'defender', 'goalkeeper'];
+                sourceGroup.players.sort((a, b) => {
+                    const orderA = positionOrder.indexOf(a.position);
+                    const orderB = positionOrder.indexOf(b.position);
+                    if (orderA !== orderB) {
+                        return orderA - orderB;
+                    }
+                    return b.rating - a.rating;
+                });
+                
+                targetGroup.players.sort((a, b) => {
+                    const orderA = positionOrder.indexOf(a.position);
+                    const orderB = positionOrder.indexOf(b.position);
+                    if (orderA !== orderB) {
+                        return orderA - orderB;
+                    }
+                    return b.rating - a.rating;
+                });
+                
+                // 重新显示分组结果
+                displayGroups(currentGroups);
+                
+                // 显示移动成功提示
+                showAlert(`已将 ${player.name} 移动到第 ${targetGroupIndex + 1} 组`);
+                
+                // 播放移动音效
+                playSound('swapSound');
+            }
+        }
+        
+        // 清除交换选择
+        function clearSwapSelection() {
+            if (selectedPlayerForSwap && selectedPlayerForSwap.element) {
+                selectedPlayerForSwap.element.classList.remove('selected');
+                const swapIcon = selectedPlayerForSwap.element.querySelector('.swap-icon');
+                if (swapIcon) {
+                    swapIcon.remove();
+                }
+            }
+            selectedPlayerForSwap = null;
+        }
+        
+        // 验证分组结果
+        function validateGroups(groups, allPlayersData, targetSizes) {
+            console.log("验证分组结果...");
+            
+            // 1. 检查所有玩家是否都被分配
+            const assignedPlayers = groups.flatMap(g => g.players.map(p => p.name));
+            const allPlayerNames = allPlayersData.map(p => p.name);
+            
+            const missingPlayers = allPlayerNames.filter(name => !assignedPlayers.includes(name));
+            const extraPlayers = assignedPlayers.filter(name => !allPlayerNames.includes(name));
+            
+            if (missingPlayers.length > 0) {
+                console.error("有玩家未被分配:", missingPlayers);
+            }
+            if (extraPlayers.length > 0) {
+                console.error("有多余的玩家:", extraPlayers);
+            }
+            
+            // 2. 检查每组人数是否符合目标
+            groups.forEach((group, index) => {
+                const targetSize = targetSizes[index];
+                const actualSize = group.players.length;
+                
+                console.log(`第${index+1}组: 目标${targetSize}人, 实际${actualSize}人, 总分: ${group.totalRating}`);
+                
+                if (targetSize !== actualSize) {
+                    console.warn(`第${index+1}组人数不匹配: 目标${targetSize}, 实际${actualSize}`);
+                }
+                
+                // 检查位置分布
+                console.log(`第${index+1}组位置分布:`, group.positionCount);
+                
+                // 检查特别人员是否在同一组
+                const specialInGroup = group.players.filter(p => p.isSpecial);
+                if (specialInGroup.length > 1) {
+                    console.warn(`第${index+1}组有多个特别人员:`, specialInGroup.map(p => p.name));
+                }
+                
+                // 检查同一组人员是否在同一组
+                const sameGroupInGroup = group.players.filter(p => p.isSameGroup);
+                if (sameGroupInGroup.length > 0) {
+                    console.log(`第${index+1}组有同一组人员:`, sameGroupInGroup.map(p => p.name));
+                }
+            });
+            
+            // 3. 检查位置分布
+            const positionTotals = { forward: 0, midfield: 0, defender: 0, goalkeeper: 0 };
+            groups.forEach(group => {
+                Object.keys(group.positionCount).forEach(position => {
+                    positionTotals[position] += group.positionCount[position] || 0;
+                });
+            });
+            
+            console.log("位置分布总计:", positionTotals);
+            
+            // 4. 检查每组位置分布是否平均
+            const positionAverages = {};
+            Object.keys(positionTotals).forEach(position => {
+                const avg = positionTotals[position] / groups.length;
+                positionAverages[position] = {
+                    avg: avg,
+                    min: Math.floor(avg),
+                    max: Math.ceil(avg)
+                };
+            });
+            
+            groups.forEach((group, index) => {
+                Object.keys(group.positionCount).forEach(position => {
+                    const count = group.positionCount[position] || 0;
+                    const avgInfo = positionAverages[position];
+                    if (count < avgInfo.min || count > avgInfo.max) {
+                        console.warn(`第${index+1}组${position}数量不平均: ${count} (应在${avgInfo.min}-${avgInfo.max}之间)`);
+                    }
+                });
+            });
+            
+            return missingPlayers.length === 0 && extraPlayers.length === 0;
+        }
+        
+        // 验证重新分组结果
+        function validateRegroup(newGroups, oldGroups) {
+            console.log("验证重新分组结果...");
+            
+            // 1. 检查玩家数量是否一致
+            const newPlayerCount = newGroups.flatMap(g => g.players).length;
+            const oldPlayerCount = oldGroups.flatMap(g => g.players).length;
+            
+            if (newPlayerCount !== oldPlayerCount) {
+                console.error(`玩家数量不一致: 新分组${newPlayerCount}人, 旧分组${oldPlayerCount}人`);
+                return false;
+            }
+            
+            // 2. 检查是否有重复玩家
+            const allPlayerNames = newGroups.flatMap(g => g.players.map(p => p.name));
+            const uniquePlayerNames = [...new Set(allPlayerNames)];
+            
+            if (allPlayerNames.length !== uniquePlayerNames.length) {
+                console.error("有重复的玩家!");
+                // 找出重复的玩家
+                const nameCounts = {};
+                allPlayerNames.forEach(name => {
+                    nameCounts[name] = (nameCounts[name] || 0) + 1;
+                });
+                
+                const duplicates = Object.keys(nameCounts).filter(name => nameCounts[name] > 1);
+                console.error("重复的玩家:", duplicates);
+                return false;
+            }
+            
+            // 3. 检查每组人数是否一致
+            let sizeMatch = true;
+            newGroups.forEach((newGroup, index) => {
+                const oldGroup = oldGroups[index];
+                if (newGroup.players.length !== oldGroup.players.length) {
+                    console.error(`第${index+1}组人数不一致: 新${newGroup.players.length}人, 旧${oldGroup.players.length}人`);
+                    sizeMatch = false;
+                }
+            });
+            
+            if (!sizeMatch) {
+                return false;
+            }
+            
+            // 4. 检查位置分布是否一致
+            let positionMatch = true;
+            newGroups.forEach((newGroup, index) => {
+                const oldGroup = oldGroups[index];
+                Object.keys(newGroup.positionCount).forEach(position => {
+                    const newCount = newGroup.positionCount[position] || 0;
+                    const oldCount = oldGroup.positionCount[position] || 0;
+                    if (newCount !== oldCount) {
+                        console.warn(`第${index+1}组${position}数量不一致: 新${newCount}, 旧${oldCount}`);
+                        positionMatch = false;
+                    }
+                });
+            });
+            
+            console.log("重新分组验证通过!");
+            return true;
+        }
+        
+        // 打开设置弹窗
+        function openSettings() {
+            document.getElementById('settingsModal').style.display = 'flex';
+        }
+        
+        // 关闭设置弹窗
+        function closeSettings() {
+            document.getElementById('settingsModal').style.display = 'none';
+        }
+        
+        // 关闭指定弹窗
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        // 调整位置
+        function adjustPositions() {
+            closeSettings();
+            loadPositionAdjustData();
+            document.getElementById('positionAdjustModal').style.display = 'flex';
+        }
+        
+        // 调整评分
+        function adjustRatings() {
+            closeSettings();
+            document.getElementById('settingsModal').style.display = 'none';
+            document.getElementById('passwordModal').style.display = 'flex';
+            currentSetting = 'rating';
+        }
+        
+        // 调整特别人员
+        function adjustSpecial() {
+            closeSettings();
+            document.getElementById('settingsModal').style.display = 'none';
+            document.getElementById('passwordModal').style.display = 'flex';
+            currentSetting = 'special';
+        }
+        
+        // 调整临时人员评分
+        function adjustTempRatings() {
+            closeSettings();
+            loadTempRatingData();
+            document.getElementById('tempRatingModal').style.display = 'flex';
+        }
+        
+        // 新增：调整分到同一组设置
+        function adjustSameGroup() {
+            closeSettings();
+            document.getElementById('settingsModal').style.display = 'none';
+            document.getElementById('passwordModal').style.display = 'flex';
+            currentSetting = 'sameGroup';
+        }
+        
+        let currentSetting = '';
+        
+        // 取消密码输入
+        function cancelPassword() {
+            document.getElementById('passwordModal').style.display = 'none';
+            document.getElementById('passwordInput').value = '';
+        }
+        
+        // 提交密码
+        function submitPassword() {
+            const password = document.getElementById('passwordInput').value;
+            const correctPassword = '75125';
+            
+            if (password === correctPassword) {
+                document.getElementById('passwordModal').style.display = 'none';
+                document.getElementById('passwordInput').value = '';
+                
+                if (currentSetting === 'rating') {
+                    loadRatingAdjustData();
+                    document.getElementById('ratingAdjustModal').style.display = 'flex';
+                } else if (currentSetting === 'special') {
+                    loadSpecialAdjustData();
+                    document.getElementById('specialAdjustModal').style.display = 'flex';
+                } else if (currentSetting === 'sameGroup') {
+                    loadSameGroupData();
+                    document.getElementById('sameGroupModal').style.display = 'flex';
+                }
+            } else {
+                showAlert('密码错误！');
+            }
+        }
+        
+        // 加载位置调整数据
+        function loadPositionAdjustData() {
+            const listElement = document.getElementById('positionAdjustList');
+            listElement.innerHTML = '';
+            
+            // 获取所有已知玩家（来自playerData）
+            const allKnownPlayers = Object.keys(playerData);
+            
+            allKnownPlayers.forEach(playerName => {
+                const dataItem = document.createElement('div');
+                dataItem.className = 'data-item';
+                
+                const currentPosition = playerData[playerName].position;
+                
+                dataItem.innerHTML = `
+                    <div class="data-name">${playerName}</div>
+                    <select class="data-select" onchange="updatePlayerDataPosition('${playerName}', this.value)">
+                        <option value="forward" ${currentPosition === 'forward' ? 'selected' : ''}>前锋</option>
+                        <option value="midfield" ${currentPosition === 'midfield' ? 'selected' : ''}>中场</option>
+                        <option value="defender" ${currentPosition === 'defender' ? 'selected' : ''}>后卫</option>
+                        <option value="goalkeeper" ${currentPosition === 'goalkeeper' ? 'selected' : ''}>守门员</option>
+                    </select>
+                `;
+                
+                listElement.appendChild(dataItem);
+            });
+        }
+        
+        // 更新玩家位置数据
+        function updatePlayerDataPosition(playerName, position) {
+            if (playerData[playerName]) {
+                playerData[playerName].position = position;
+                playSound('click');
+                showAlert(`已将 ${playerName} 的位置更新为 ${positionChinese[position]}`);
+            }
+        }
+        
+        // 加载评分调整数据
+        function loadRatingAdjustData() {
+            const listElement = document.getElementById('ratingAdjustList');
+            listElement.innerHTML = '';
+            
+            // 获取所有已知玩家（来自playerData）
+            const allKnownPlayers = Object.keys(playerData);
+            
+            allKnownPlayers.forEach(playerName => {
+                const dataItem = document.createElement('div');
+                dataItem.className = 'data-item';
+                
+                const currentRating = playerData[playerName].rating;
+                
+                dataItem.innerHTML = `
+                    <div class="data-name">${playerName}</div>
+                    <input type="number" class="data-input" min="1" max="10" value="${currentRating}" 
+                           onchange="updatePlayerDataRating('${playerName}', this.value)">
+                `;
+                
+                listElement.appendChild(dataItem);
+            });
+        }
+        
+        // 更新玩家评分数据
+        function updatePlayerDataRating(playerName, rating) {
+            const ratingValue = parseInt(rating);
+            if (ratingValue < 1 || ratingValue > 10) {
+                showAlert('评分必须在1-10之间');
+                return;
+            }
+            
+            if (playerData[playerName]) {
+                playerData[playerName].rating = ratingValue;
+                playSound('click');
+                showAlert(`已将 ${playerName} 的评分更新为 ${ratingValue}`);
+            }
+        }
+        
+        // 加载特别人员调整数据
+        function loadSpecialAdjustData() {
+            const listElement = document.getElementById('specialAdjustList');
+            listElement.innerHTML = '';
+            
+            // 获取所有已知玩家（来自playerData）
+            const allKnownPlayers = Object.keys(playerData);
+            
+            allKnownPlayers.forEach(playerName => {
+                const dataItem = document.createElement('div');
+                dataItem.className = 'data-item';
+                
+                const isSpecial = specialPlayers.includes(playerName);
+                
+                dataItem.innerHTML = `
+                    <div class="data-name">${playerName}</div>
+                    <input type="checkbox" class="data-checkbox" ${isSpecial ? 'checked' : ''} 
+                           onchange="updateSpecialPlayer('${playerName}', this.checked)">
+                `;
+                
+                listElement.appendChild(dataItem);
+            });
+        }
+        
+        // 更新特别人员
+        function updateSpecialPlayer(playerName, isSpecial) {
+            playSound('click');
+            
+            if (isSpecial) {
+                if (!specialPlayers.includes(playerName)) {
+                    specialPlayers.push(playerName);
+                }
+            } else {
+                const index = specialPlayers.indexOf(playerName);
+                if (index !== -1) {
+                    specialPlayers.splice(index, 1);
+                }
+            }
+            
+            showAlert(`${playerName} ${isSpecial ? '已添加到' : '已从'}特别人员名单中${isSpecial ? '' : '移除'}`);
+        }
+        
+        // 加载临时人员评分数据
+        function loadTempRatingData() {
+            const listElement = document.getElementById('tempRatingList');
+            listElement.innerHTML = '';
+            
+            // 找出未匹配后台数据的玩家（即不在playerData中的玩家）
+            const tempPlayers = allPlayers.filter(player => !playerData[player]);
+            
+            if (tempPlayers.length === 0) {
+                listElement.innerHTML = '<div style="text-align: center; padding: 30px; color: #aaa;">暂无临时人员</div>';
+                return;
+            }
+            
+            tempPlayers.forEach(playerName => {
+                const dataItem = document.createElement('div');
+                dataItem.className = 'data-item';
+                
+                // 使用临时评分，如果没有则使用当前评分
+                const currentRating = tempPlayerRatings[playerName] !== undefined ? 
+                                      tempPlayerRatings[playerName] : playerRatings[playerName] || 7;
+                
+                dataItem.innerHTML = `
+                    <div class="data-name">${playerName}</div>
+                    <input type="number" class="data-input" min="1" max="10" value="${currentRating}" 
+                           onchange="updateTempPlayerRating('${playerName}', this.value)">
+                `;
+                
+                listElement.appendChild(dataItem);
+            });
+        }
+        
+        // 更新临时玩家评分
+        function updateTempPlayerRating(playerName, rating) {
+            const ratingValue = parseInt(rating);
+            if (ratingValue < 1 || ratingValue > 10) {
+                showAlert('评分必须在1-10之间');
+                return;
+            }
+            
+            tempPlayerRatings[playerName] = ratingValue;
+            playSound('click');
+        }
+        
+        // 保存临时评分
+        function saveTempRatings() {
+            // 更新主评分数据
+            Object.keys(tempPlayerRatings).forEach(playerName => {
+                playerRatings[playerName] = tempPlayerRatings[playerName];
+            });
+            
+            // 如果有分组结果，重新计算分组
+            if (groupingCompleted && currentGroups.length > 0) {
+                // 重新计算每组的评分总和
+                currentGroups.forEach(group => {
+                    group.totalRating = 0;
+                    group.players.forEach(player => {
+                        // 使用最新的评分
+                        const finalRating = tempPlayerRatings[player.name] || playerRatings[player.name] || 7;
+                        player.rating = finalRating;
+                        group.totalRating += finalRating;
+                    });
+                });
+                
+                // 重新显示分组结果
+                displayGroups(currentGroups);
+            }
+            
+            showAlert('临时评分已保存');
+            closeModal('tempRatingModal');
+        }
+        
+        // 新增：加载分到同一组数据
+        function loadSameGroupData() {
+            const listElement = document.getElementById('sameGroupList');
+            listElement.innerHTML = '';
+            
+            if (allPlayers.length === 0) {
+                listElement.innerHTML = '<div style="text-align: center; padding: 30px; color: #aaa;">请先输入人员名单</div>';
+                return;
+            }
+            
+            allPlayers.forEach(playerName => {
+                const dataItem = document.createElement('div');
+                dataItem.className = 'same-group-item';
+                
+                const isSelected = sameGroupPlayers.includes(playerName);
+                
+                dataItem.innerHTML = `
+                    <input type="checkbox" class="same-group-checkbox" ${isSelected ? 'checked' : ''} 
+                           onchange="toggleSameGroupPlayer('${playerName}', this.checked)">
+                    <div class="same-group-name">${playerName}</div>
+                `;
+                
+                listElement.appendChild(dataItem);
+            });
+        }
+        
+        // 新增：切换分到同一组人员
+        function toggleSameGroupPlayer(playerName, isChecked) {
+            playSound('click');
+            
+            if (isChecked) {
+                if (!sameGroupPlayers.includes(playerName)) {
+                    sameGroupPlayers.push(playerName);
+                }
+            } else {
+                const index = sameGroupPlayers.indexOf(playerName);
+                if (index !== -1) {
+                    sameGroupPlayers.splice(index, 1);
+                }
+            }
+        }
+        
+        // 新增：保存分到同一组设置
+        function saveSameGroup() {
+            // 检查是否选择了人员
+            if (sameGroupPlayers.length === 0) {
+                showAlert('未选择任何人员');
+                return;
+            }
+            
+            // 检查分组数量是否足够
+            const groupCount = parseInt(document.getElementById('groupCount').textContent);
+            if (groupCount < 1) {
+                showAlert('分组数量至少为1');
+                return;
+            }
+            
+            showAlert(`已设置 ${sameGroupPlayers.join('、')} 分到同一组`);
+            closeModal('sameGroupModal');
+            
+            // 如果已经分组完成，重新分组以应用新设置
+            if (groupingCompleted) {
+                setTimeout(() => {
+                    performGrouping();
+                }, 1000);
+            }
+        }
+        
+        // 显示自定义弹窗
+        function showAlert(message) {
+            document.getElementById('alertMessage').textContent = message;
+            document.getElementById('customAlert').style.display = 'flex';
+        }
+        
+        // 关闭自定义弹窗
+        function closeAlert() {
+            document.getElementById('customAlert').style.display = 'none';
+        }
+        
+        // 播放音效
+        function playSound(type) {
+            try {
+                const sound = document.getElementById(`${type}Sound`);
+                if (sound) {
+                    sound.currentTime = 0;
+                    sound.play().catch(e => console.log("音效播放失败:", e));
+                }
+            } catch (e) {
+                console.log("音效播放失败:", e);
+            }
+        }
+    </script>
+</body>
 </html>
